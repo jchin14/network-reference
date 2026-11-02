@@ -14,18 +14,21 @@
   --r-bg:#fde8e8;--r-fg:#a8211f;--h-bg:#fdeedd;--h-fg:#a24d06;--m-bg:#fbf4d4;--m-fg:#7a5c00;
   --l-bg:#e6eefc;--l-fg:#2c4f9e;--i-bg:#ececea;--i-fg:#55585e;--ok-bg:#e3f4e8;--ok-fg:#1d6b39;
   --h0:#ecece8;--h1:#f6dfa0;--h2:#f1b56a;--h3:#e2783f;--h4:#c43d2b;
+  --p1:#cfdcf8;--p2:#7d9ce6;--p3:#2f5bd3;--p1t:#1b1c1e;--p2t:#0d1a3d;--p3t:#ffffff;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#141517;--panel:#1c1d20;--ink:#e8e8e6;--muted:#9a9ca1;--line:#2d2f33;--soft:#232428;--accent:#86a6ff;
   --r-bg:#3d1c1c;--r-fg:#ff9a94;--h-bg:#3b2814;--h-fg:#ffb672;--m-bg:#353016;--m-fg:#e9cf6a;
   --l-bg:#1b2a47;--l-fg:#9dbaff;--i-bg:#2a2b2f;--i-fg:#b0b2b6;--ok-bg:#163223;--ok-fg:#7fd9a0;
   --h0:#26272b;--h1:#5a4c1e;--h2:#7c4a1c;--h3:#a3441f;--h4:#d4432c;
+  --p1:#24345a;--p2:#3c5aa8;--p3:#86a6ff;--p1t:#e8e8e6;--p2t:#ffffff;--p3t:#0d1a3d;
 }}
 :root[data-theme="dark"]{
   --bg:#141517;--panel:#1c1d20;--ink:#e8e8e6;--muted:#9a9ca1;--line:#2d2f33;--soft:#232428;--accent:#86a6ff;
   --r-bg:#3d1c1c;--r-fg:#ff9a94;--h-bg:#3b2814;--h-fg:#ffb672;--m-bg:#353016;--m-fg:#e9cf6a;
   --l-bg:#1b2a47;--l-fg:#9dbaff;--i-bg:#2a2b2f;--i-fg:#b0b2b6;--ok-bg:#163223;--ok-fg:#7fd9a0;
   --h0:#26272b;--h1:#5a4c1e;--h2:#7c4a1c;--h3:#a3441f;--h4:#d4432c;
+  --p1:#24345a;--p2:#3c5aa8;--p3:#86a6ff;--p1t:#e8e8e6;--p2t:#ffffff;--p3t:#0d1a3d;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif}
@@ -91,17 +94,55 @@ section.cat h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;colo
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 footer{color:var(--muted);font-size:12.5px;margin-top:30px}
+a{color:var(--accent)}
+.top{align-items:center}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:14px 0 20px;overflow-x:auto}
+.tabs a{padding:8px 12px;color:var(--muted);text-decoration:none;font-size:14px;font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs a:hover{color:var(--ink)}
+.tabs a[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tscroll,.cscroll{overflow-x:auto}
+table.lim{width:100%;border-collapse:collapse;font-size:13.5px;min-width:700px}
+.lim th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:0 12px 8px 0;white-space:nowrap}
+.lim td{padding:9px 12px 9px 0;border-top:1px solid var(--line);vertical-align:top}
+.lim .sub{color:var(--muted);font-size:12px;margin-top:2px}
+.lim .badge{display:inline-block}
+.pw b{font-weight:600}.pw .mono,.lim td .mono{color:var(--muted);font-size:12px;margin-left:5px}
+.chart{min-width:880px;display:grid;grid-template-columns:56px 1fr;row-gap:4px}
+.rl{font:11px/1 var(--mono);color:var(--muted);display:flex;align-items:center}
+.track{position:relative;height:28px}
+.track.sb{height:20px}.track.axis{height:14px}
+.blk{position:absolute;top:0;bottom:0;border-radius:4px;font:11px/1 var(--mono);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;box-shadow:inset 0 0 0 1px var(--panel)}
+.blk:hover,.blk.sel{outline:2px solid var(--accent);z-index:1}
+.q1{background:var(--p1);color:var(--p1t)}.q2{background:var(--p2);color:var(--p2t)}.q3{background:var(--p3);color:var(--p3t)}
+.qx{background:repeating-linear-gradient(135deg,var(--soft) 0 4px,var(--line) 4px 8px);color:var(--muted)}
+.blk.dfs::after{content:'';position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.75}
+.sbl{position:absolute;top:0;bottom:0;border-bottom:2px solid var(--line);font-size:11px;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden}
+.tick{position:absolute;top:0;font:10px/1 var(--mono);color:var(--muted);transform:translateX(-50%)}
+.legend i.hatch{background:repeating-linear-gradient(135deg,var(--soft) 0 3px,var(--line) 3px 6px)}
+.legend i.dfsdot{width:6px;height:6px;border-radius:50%;background:var(--muted);vertical-align:1px}
+.wdetail{font-size:13px;margin-top:10px;min-height:3.2em;color:var(--muted)}
+.wdetail b{color:var(--ink)}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.fgrid.f2{grid-template-columns:1fr 1fr}
+label{font-size:12.5px;color:var(--muted);display:block}
+label.full{margin-bottom:10px}
+label input[type=text]{margin-top:4px;font-size:15px;padding:9px 11px}
+select{width:100%;margin-top:4px;font:inherit;font-size:14px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--soft);color:var(--ink)}
+.hint{font-size:12.5px;color:var(--muted);margin:10px 0 0}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
-    <div>
-      <h1 class="brand"><img src="logo.svg" alt="" width="36" height="36">IP Range Reference</h1>
-      <p class="lede">The address blocks that hotspots, routers, Docker, VMs, VPNs and clouds use by default. Check a subnet before you set up a network, so it won’t collide with whatever someone plugs in later.</p>
-    </div>
+    <h1 class="brand"><img src="logo.svg" alt="" width="36" height="36">IP Range Reference</h1>
     <button id="theme" title="Toggle theme">◐</button>
   </div>
+  <nav class="tabs" role="tablist">
+    <a href="#ip" role="tab" data-tab="ip">IP ranges</a>
+    <a href="#wifi" role="tab" data-tab="wifi">Wi-Fi power limits (AU)</a>
+  </nav>
+
+  <div class="panel" id="tab-ip" role="tabpanel">
+  <p class="lede">The address blocks that hotspots, routers, Docker, VMs, VPNs and clouds use by default. Check a subnet before you set up a network, so it won’t collide with whatever someone plugs in later.</p>
 
   <div class="card">
     <h2>Check a subnet</h2>
@@ -142,6 +183,47 @@ footer{color:var(--muted);font-size:12.5px;margin-top:30px}
   <div id="list"></div>
 
   <footer>Risk levels: <b>Never use</b> = reserved/special, will break things. <b>Very common</b> = a fixed default on popular gear. <b>Common</b>/<b>Occasional</b> = defaults on less common tools. <i>varies</i> = the tool picks a random block inside that range. Click any range to copy it. Defaults change between firmware and versions, so check against your own gear.</footer>
+  </div>
+
+  <div class="panel" id="tab-wifi" role="tabpanel" hidden>
+  <p class="lede">The most power (EIRP) an 802.11 device may radiate in Australia, by band and channel, under the ACMA LIPD class licence. EIRP counts antenna gain, so a higher-gain antenna means turning the radio down.</p>
+
+  <div class="card">
+    <h2>Limits by band</h2>
+    <div class="tscroll"><table class="lim" id="wtable"></table></div>
+  </div>
+
+  <div class="card">
+    <h2>Channels</h2>
+    <div class="row-btns" id="wbands" style="margin:0 0 14px"></div>
+    <div class="cscroll"><div class="chart" id="wchart"></div></div>
+    <div class="legend"><span><i style="background:var(--p1)"></i>≤ 250 mW</span><span><i style="background:var(--p2)"></i>1 W</span><span><i style="background:var(--p3)"></i>4 W</span><span><i class="hatch"></i>not permitted</span><span><i class="dfsdot"></i>DFS required</span></div>
+    <div class="wdetail" id="wdetail">Hover or tap a channel to see its limits.</div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2>mW ⇄ dBm</h2>
+      <div class="fgrid f2">
+        <label>Milliwatts<input type="text" id="mw" inputmode="decimal" value="200" autocomplete="off"></label>
+        <label>dBm<input type="text" id="dbm" inputmode="decimal" value="23.01" autocomplete="off"></label>
+      </div>
+      <p class="hint">+3 dB doubles the power, +10 dB is ×10. 0 dBm = 1 mW, 20 dBm = 100 mW, 30 dBm = 1 W.</p>
+    </div>
+    <div class="card">
+      <h2>Is my setup within the limit?</h2>
+      <label class="full">Band and rule<select id="wlim"></select></label>
+      <div class="fgrid">
+        <label>Radio power (dBm)<input type="text" id="wtx" inputmode="decimal" value="17" autocomplete="off"></label>
+        <label>Antenna gain (dBi)<input type="text" id="wgain" inputmode="decimal" value="4" autocomplete="off"></label>
+        <label>Cable loss (dB)<input type="text" id="wloss" inputmode="decimal" value="0" autocomplete="off"></label>
+      </div>
+      <div class="verdict" id="wout"></div>
+    </div>
+  </div>
+
+  <footer><b>EIRP</b> = radio power + antenna gain − cable loss. <b>DFS</b> (Dynamic Frequency Selection): the radio must listen for radar and leave the channel when it hears it. <b>TPC</b> (Transmit Power Control): the radio can cut its power by at least 6 dB; without it the DFS limit is halved. Data: <a href="https://wifiwizardofoz.com/wp-content/uploads/australian_802.11_eirp_transmit_power_limits_v2.0.pdf">Australian 802.11 EIRP Transmit Power Limits v2.0</a> (April 2024) by Brett Verney, based on the Radiocommunications (Low Interference Potential Devices) Class Licence (Variation 2023). Section numbers refer to that licence. Rules change, so check the current ACMA class licence before relying on this.</footer>
+  </div>
 </div>
 <div id="toast"></div>
 
@@ -396,6 +478,102 @@ list.addEventListener('click',ev=>{const t=ev.target.closest('[data-copy]');if(!
 document.getElementById('theme').onclick=()=>{const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('theme',r.dataset.theme)}catch(e){}};
 try{const t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
 chips();render();
+
+// ---------- tabs ----------
+function showTab(){const t=location.hash==='#wifi'?'wifi':'ip';
+  document.querySelectorAll('.tabs a').forEach(a=>a.setAttribute('aria-selected',a.dataset.tab===t));
+  document.getElementById('tab-ip').hidden=t!=='ip';document.getElementById('tab-wifi').hidden=t!=='wifi'}
+addEventListener('hashchange',showTab);showTab();
+
+// ---------- Wi-Fi power limits (Australia) ----------
+// mW limits. ni/no = indoor/outdoor without TPC (DFS bands only). out 0 = not permitted outdoors.
+const WR={
+  b24:{band:'2.4 GHz ISM',sec:'59',i:4000,o:4000},
+  u1:{band:'UNII-1',sec:'61 / 61A',i:200,o:1000},
+  u2a:{band:'UNII-2a',sec:'62',i:200,ni:100,o:0,no:0,dfs:1},
+  u2c:{band:'UNII-2c',sec:'63',i:1000,ni:500,o:1000,no:500,dfs:1},
+  wr:{band:'UNII-2c (weather radar)',sec:'63',np:'Not permitted: weather radar'},
+  u3:{band:'UNII-3',sec:'60',i:4000,o:4000},
+  u5:{band:'UNII-5',sec:'63AA / 63AB',i:250,o:25}};
+const dbm=mw=>10*Math.log10(mw),mwOf=d=>10**(d/10);
+const pw=mw=>mw>=1000?`${mw/1000} W`:`${mw} mW`;
+const pwd=mw=>`<b>${pw(mw)}</b><span class="mono">${Math.round(dbm(mw))} dBm</span>`;
+function sub5(c){return c<5250?'u1':c<5330?'u2a':c<5570?'u2c':c<5650?'wr':c<5730?'u2c':'u3'}
+// combine rules of every 20 MHz piece of a channel: strictest wins
+function rule(band,c,w){
+  if(band==='6')return{...WR.u5,subs:['u5']};
+  if(band==='2.4')return w===20?{...WR.b24,subs:['b24']}:w===40?{...WR.b24,band:'2.4 GHz ISM (permitted, but discouraged: only one clean 40 MHz channel fits)',subs:['b24'],lab:'discouraged'}:{np:'Not permitted',subs:['b24']};
+  const subs=[];for(let f=c-w/2+10;f<c+w/2;f+=20){const s=sub5(f);if(!subs.includes(s))subs.push(s)}
+  const rs=subs.map(s=>WR[s]);const np=rs.find(r=>r.np);if(np)return{...np,subs};
+  if(w===160&&subs.some(s=>s==='u2c'||s==='u3'))return{np:'Not permitted at 160 MHz',subs,sec:rs[0].sec};
+  const mn=k=>Math.min(...rs.map(r=>r[k]??r[k==='ni'?'i':'o']));
+  return{band:subs.map(s=>WR[s].band).join(' + '),sec:[...new Set(rs.map(r=>r.sec))].join(', '),i:mn('i'),o:mn('o'),ni:mn('ni'),no:mn('no'),dfs:rs.some(r=>r.dfs),subs}}
+const ch=(base,list,w)=>list.map(n=>({n,w,c:base+5*n}));
+const rng=(a,b,s)=>{const r=[];for(let i=a;i<=b;i+=s)r.push(i);return r};
+const WB={
+  '2.4':{lab:'2.4 GHz',lo:2400,hi:2484,tick:20,subs:[['b24',2400,2483.5,'ISM 2400–2483.5 MHz']],
+    rows:[[20,ch(2407,[1,6,11],20)],[40,[{n:'',w:40,c:2442,span:[2402,2482]}]],[80,[{n:'',w:80,c:2442,span:[2402,2482]}]],[160,[{n:'',w:160,c:2442,span:[2402,2482]}]]]},
+  '5':{lab:'5 GHz',lo:5150,hi:5900,tick:50,subs:[['u1',5150,5250,'UNII-1'],['u2a',5250,5350,'UNII-2a'],['u2c',5470,5730,'UNII-2c'],['u3',5730,5850,'UNII-3']],
+    rows:[[20,ch(5000,[...rng(36,64,4),...rng(100,144,4),...rng(149,165,4)],20)],[40,ch(5000,[38,46,54,62,102,110,118,126,134,142,151,159],40)],[80,ch(5000,[42,58,106,122,138,155],80)],[160,ch(5000,[50,114,163],160)]]},
+  '6':{lab:'6 GHz',lo:5925,hi:6425,tick:50,subs:[['u5',5925,6425,'UNII-5 (5925–6425 MHz)']],
+    rows:[[20,ch(5950,rng(1,93,4),20)],[40,ch(5950,rng(3,91,8),40)],[80,ch(5950,rng(7,87,16),80)],[160,ch(5950,[15,47,79],160)]]}};
+function lims(r){if(r.np)return r.np;
+  const one=(a,b)=>a===0?'not permitted':r.dfs&&b!==a?`${pw(a)} (${Math.round(dbm(a))} dBm) with TPC, ${pw(b)} (${Math.round(dbm(b))} dBm) without`:`${pw(a)} (${Math.round(dbm(a))} dBm)`;
+  return `<b>Indoor</b> ${one(r.i,r.ni)} · <b>Outdoor</b> ${one(r.o,r.no)}${r.dfs?' · <b>DFS required</b>':''}`}
+let wband='5';const wchart=document.getElementById('wchart'),wdet=document.getElementById('wdetail');
+function wdraw(){const B=WB[wband],pos=f=>((f-B.lo)/(B.hi-B.lo)*100)+'%',wid=(a,b)=>((b-a)/(B.hi-B.lo)*100)+'%';
+  let h='<div class="rl"></div><div class="track sb">'+B.subs.map(([k,a,b,l])=>`<div class="sbl" style="left:${pos(a)};width:${wid(a,b)}">${l}</div>`).join('')+'</div>';
+  for(const[w,list]of B.rows){h+=`<div class="rl">${w} MHz</div><div class="track">`;
+    for(const c of list){const r=rule(wband,c.c,w),[a,b]=c.span||[c.c-w/2,c.c+w/2];
+      const mx=r.np?0:Math.max(r.i,r.o),q=r.np?'qx':mx<=250?'q1':mx<=1000?'q2':'q3';
+      h+=`<div class="blk ${q}${r.dfs?' dfs':''}" style="left:${pos(a)};width:${wid(a,b)}" data-k="${wband}|${c.n}|${w}|${c.c}|${a}|${b}">${c.n||r.lab||r.np}</div>`}
+    h+='</div>'}
+  h+='<div class="rl">GHz</div><div class="track axis">';
+  for(let f=Math.ceil(B.lo/B.tick)*B.tick;f<B.hi;f+=B.tick)h+=`<div class="tick" style="left:${pos(f)}">${(f/1000).toFixed(2)}</div>`;
+  wchart.innerHTML=h+'</div>';wdet.textContent='Hover or tap a channel to see its limits.'}
+function wshow(el){const[bd,n,w,c,a,b]=el.dataset.k.split('|');const r=rule(bd,+c,+w);
+  wchart.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');
+  const head=n?`Channel ${n} · ${w} MHz · ${(a/1000).toFixed(3)}–${(b/1000).toFixed(3)} GHz`:`${w} MHz channels`;
+  wdet.innerHTML=`<b>${head}</b>${r.band?' · '+r.band:''}${r.sec?' · licence s. '+r.sec:''}<br>${lims(r)}`}
+wchart.addEventListener('mouseover',e=>{const b=e.target.closest('.blk');if(b)wshow(b)});
+wchart.addEventListener('click',e=>{const b=e.target.closest('.blk');if(b)wshow(b)});
+const wbands=document.getElementById('wbands');
+function wbtns(){wbands.innerHTML='';for(const k in WB){const b=document.createElement('button');b.textContent=WB[k].lab;if(k===wband)b.className='on';b.onclick=()=>{wband=k;wbtns();wdraw()};wbands.appendChild(b)}}
+wbtns();wdraw();
+// summary table
+(function(){const dfsCell=r=>r.dfs?'<span class="badge b-med">DFS · TPC</span>':'—';
+  const lim=(a,b,dfs)=>a===0?'<span class="badge b-reserved">Not permitted</span>':dfs?`<div class="pw">${pwd(a)}</div><div class="sub">with TPC · ${pw(b)} (${Math.round(dbm(b))} dBm) without</div>`:`<div class="pw">${pwd(a)}</div>`;
+  const rows=[
+    ['2.4 GHz','ISM-B','1–13','1, 6 and 11 don’t overlap','20 MHz','40 MHz permitted but discouraged',WR.b24],
+    ['5 GHz','UNII-1','36–48','5150–5250 MHz','20–160 MHz','',WR.u1],
+    ['5 GHz','UNII-2a','52–64','5250–5350 MHz','20–160 MHz','',WR.u2a],
+    ['5 GHz','UNII-2c','100–112, 132–144','5470–5570, 5650–5730 MHz','20–80 MHz','160 MHz not permitted',WR.u2c],
+    ['5 GHz','UNII-2c','116–128','5570–5650 MHz','—','',WR.wr],
+    ['5 GHz','UNII-3','149–165','5725–5850 MHz','20–80 MHz','160 MHz not permitted',WR.u3],
+    ['6 GHz','UNII-5','1–93','5925–6425 MHz','20–160 MHz','',WR.u5]];
+  document.getElementById('wtable').innerHTML='<tr><th>Band</th><th>Channels</th><th>Widths</th><th>Indoor EIRP</th><th>Outdoor EIRP</th><th>Needs</th><th>Licence s.</th></tr>'+
+    rows.map(([b,s,c,cs,w,ws,r])=>`<tr><td><b>${b}</b><div class="sub">${s}</div></td><td><span class="mono">${c}</span><div class="sub">${cs}</div></td><td>${w}${ws?`<div class="sub">${ws}</div>`:''}</td>`+
+      (r.np?`<td colspan="3"><span class="badge b-reserved">Not permitted</span><div class="sub">Reserved for weather radar</div></td>`:`<td>${lim(r.i,r.ni,r.dfs)}</td><td>${lim(r.o,r.no,r.dfs)}</td><td>${dfsCell(r)}</td>`)+
+      `<td class="mono">${r.sec}</td></tr>`).join('')})();
+// mW <-> dBm
+const mwEl=document.getElementById('mw'),dbmEl=document.getElementById('dbm');
+const r2=x=>String(Math.round(x*100)/100);
+mwEl.addEventListener('input',()=>{const v=parseFloat(mwEl.value);dbmEl.value=v>0?r2(dbm(v)):''});
+dbmEl.addEventListener('input',()=>{const v=parseFloat(dbmEl.value);mwEl.value=isFinite(v)?r2(mwOf(v)):''});
+// EIRP check
+const WL=[['2.4 GHz (all channels)',4000],['5 GHz UNII-1 (36–48), indoor',200],['5 GHz UNII-1 (36–48), outdoor',1000],
+  ['5 GHz UNII-2a (52–64), indoor, with TPC',200],['5 GHz UNII-2a (52–64), indoor, no TPC',100],
+  ['5 GHz UNII-2c (100–112, 132–144), with TPC',1000],['5 GHz UNII-2c (100–112, 132–144), no TPC',500],
+  ['5 GHz UNII-3 (149–165)',4000],['6 GHz, indoor',250],['6 GHz, outdoor',25]];
+const wlim=document.getElementById('wlim'),wout=document.getElementById('wout');
+wlim.innerHTML=WL.map(([l,m],i)=>`<option value="${i}">${l}: ${pw(m)} (${Math.round(dbm(m))} dBm)</option>`).join('');
+function wcheck(){const[tx,g,l]=['wtx','wgain','wloss'].map(id=>parseFloat(document.getElementById(id).value));
+  wout.style.display='block';
+  if(![tx,g].every(isFinite)){wout.className='verdict v-i';wout.innerHTML='<b>Enter radio power and antenna gain</b>';return}
+  const e=tx+g-(isFinite(l)?l:0),max=dbm(WL[wlim.value][1]),m=max-e;
+  wout.className='verdict '+(m>=0?'v-ok':'v-r');
+  wout.innerHTML=`<b>EIRP ${r2(e)} dBm (${r2(mwOf(e))} mW): ${m>=0?'within the limit':'over the limit'}</b><span>Limit ${r2(max)} dBm. ${m>=0?`${r2(m)} dB of headroom.`:`Turn the radio down by ${r2(-m)} dB, to ${r2(tx+m)} dBm or less.`}</span>`}
+['wlim','wtx','wgain','wloss'].forEach(id=>document.getElementById(id).addEventListener('input',wcheck));wcheck();
 </script>
 </body>
 </html>
