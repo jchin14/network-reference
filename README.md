@@ -1,4 +1,4 @@
-# Private IP Ranges
+# IP Range Reference
 
 A one-page reference of private, reserved and commonly-claimed IP ranges (phone hotspots, router defaults, Docker, Kubernetes, VMs, VPNs such as Tailscale, CGNAT, IPv6 ULA and link-local). Use it to pick a subnet that won't collide with something else on your network.
 
