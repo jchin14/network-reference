@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Private IP Ranges</title>
+<style>
+:root{
+  --bg:#f7f7f5;--panel:#ffffff;--ink:#1b1c1e;--muted:#64676d;--line:#e3e3df;--soft:#f0f0ec;
+  --accent:#2f5bd3;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r-bg:#fde8e8;--r-fg:#a8211f;--h-bg:#fdeedd;--h-fg:#a24d06;--m-bg:#fbf4d4;--m-fg:#7a5c00;
+  --l-bg:#e6eefc;--l-fg:#2c4f9e;--i-bg:#ececea;--i-fg:#55585e;--ok-bg:#e3f4e8;--ok-fg:#1d6b39;
+  --h0:#ecece8;--h1:#f6dfa0;--h2:#f1b56a;--h3:#e2783f;--h4:#c43d2b;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141517;--panel:#1c1d20;--ink:#e8e8e6;--muted:#9a9ca1;--line:#2d2f33;--soft:#232428;--accent:#86a6ff;
+  --r-bg:#3d1c1c;--r-fg:#ff9a94;--h-bg:#3b2814;--h-fg:#ffb672;--m-bg:#353016;--m-fg:#e9cf6a;
+  --l-bg:#1b2a47;--l-fg:#9dbaff;--i-bg:#2a2b2f;--i-fg:#b0b2b6;--ok-bg:#163223;--ok-fg:#7fd9a0;
+  --h0:#26272b;--h1:#5a4c1e;--h2:#7c4a1c;--h3:#a3441f;--h4:#d4432c;
+}}
+:root[data-theme="dark"]{
+  --bg:#141517;--panel:#1c1d20;--ink:#e8e8e6;--muted:#9a9ca1;--line:#2d2f33;--soft:#232428;--accent:#86a6ff;
+  --r-bg:#3d1c1c;--r-fg:#ff9a94;--h-bg:#3b2814;--h-fg:#ffb672;--m-bg:#353016;--m-fg:#e9cf6a;
+  --l-bg:#1b2a47;--l-fg:#9dbaff;--i-bg:#2a2b2f;--i-fg:#b0b2b6;--ok-bg:#163223;--ok-fg:#7fd9a0;
+  --h0:#26272b;--h1:#5a4c1e;--h2:#7c4a1c;--h3:#a3441f;--h4:#d4432c;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:32px 16px 80px}
+h1{font-size:28px;margin:0 0 6px;letter-spacing:-.01em}
+h2{font-size:18px;margin:0 0 12px}
+.lede{color:var(--muted);margin:0 0 24px;max-width:70ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:18px}
+code,.mono{font-family:var(--mono);font-size:.92em}
+input[type=text]{width:100%;font:16px var(--mono);padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--soft);color:var(--ink)}
+input[type=text]:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.row-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--soft);color:var(--ink);padding:6px 11px;border-radius:8px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.on{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.verdict{margin-top:14px;padding:12px 14px;border-radius:10px;display:none}
+.verdict b{display:block;font-size:15px}
+.verdict span{font-size:13px}
+.v-r{background:var(--r-bg);color:var(--r-fg)}.v-h{background:var(--h-bg);color:var(--h-fg)}.v-m{background:var(--m-bg);color:var(--m-fg)}
+.v-l{background:var(--l-bg);color:var(--l-fg)}.v-ok{background:var(--ok-bg);color:var(--ok-fg)}.v-i{background:var(--i-bg);color:var(--i-fg)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+ul.rules{margin:0;padding-left:18px}ul.rules li{margin:4px 0}
+.strip-label{font-size:13px;color:var(--muted);margin:14px 0 6px;display:flex;justify-content:space-between;gap:8px}
+.strip{display:grid;gap:2px}
+.s256{grid-template-columns:repeat(32,1fr)}
+.s16{grid-template-columns:repeat(16,1fr)}
+.cell{aspect-ratio:1;border-radius:2px;background:var(--h0);cursor:pointer;position:relative}
+.s16 .cell{aspect-ratio:auto;height:28px;font:11px var(--mono);display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.cell:hover{outline:2px solid var(--accent);z-index:1}
+.c1{background:var(--h1)}.c2{background:var(--h2)}.c3{background:var(--h3)}.c4{background:var(--h4)}
+.s16 .c3,.s16 .c4{color:#fff}
+.legend{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap;margin-top:10px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-2px;margin-right:4px}
+#tip{font-size:12.5px;color:var(--muted);min-height:2.6em;margin-top:8px}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 18px}
+.sep{width:1px;background:var(--line);margin:0 6px}
+section.cat{margin-bottom:26px}
+section.cat h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
+.entries{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.e{display:grid;grid-template-columns:minmax(200px,260px) 1fr 118px;gap:14px;padding:12px 16px;border-top:1px solid var(--line);align-items:start}
+.e:first-child{border-top:0}
+.e.hit{background:var(--soft)}
+.range{font-family:var(--mono);font-size:14px;font-weight:600;cursor:copy;word-break:break-all}
+.range:hover{color:var(--accent)}
+.span{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:2px;word-break:break-all}
+.name{font-weight:600}
+.note{color:var(--muted);font-size:13.5px;margin-top:2px}
+.rel{display:inline-block;font-size:11px;font-family:var(--mono);background:var(--accent);color:var(--panel);border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:1px}
+.badge{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:999px;text-align:center;white-space:nowrap;justify-self:end}
+.b-reserved{background:var(--r-bg);color:var(--r-fg)}.b-high{background:var(--h-bg);color:var(--h-fg)}.b-med{background:var(--m-bg);color:var(--m-fg)}
+.b-low{background:var(--l-bg);color:var(--l-fg)}.b-info{background:var(--i-bg);color:var(--i-fg)}
+.var{font-size:11px;color:var(--muted);font-style:italic}
+@media (max-width:640px){
+  .e{grid-template-columns:1fr auto;gap:4px 10px}
+  .e .desc{grid-column:1/-1;grid-row:2}
+  .s256{grid-template-columns:repeat(16,1fr)}
+}
+.empty{padding:16px;color:var(--muted)}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+footer{color:var(--muted);font-size:12.5px;margin-top:30px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Private IP Ranges</h1>
+      <p class="lede">The address blocks that hotspots, routers, Docker, VMs, VPNs and clouds use by default. Check a subnet before you set up a network, so it won’t collide with whatever someone plugs in later.</p>
+    </div>
+    <button id="theme" title="Toggle theme">◐</button>
+  </div>
+
+  <div class="card">
+    <h2>Check a subnet</h2>
+    <input type="text" id="q" placeholder="e.g. 10.20.0.0/24, 192.168.1.5, fd12:3456:789a::/48, or search 'docker'" autocomplete="off" spellcheck="false">
+    <div class="row-btns">
+      <button id="suggest">Suggest a quiet IPv4 /24</button>
+      <button id="ula">Generate random IPv6 ULA /48</button>
+      <button id="clear">Clear</button>
+    </div>
+    <div class="verdict" id="verdict"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2>Rules of thumb</h2>
+      <ul class="rules">
+        <li><b>IPv4 LAN:</b> pick a random <code>10.x.y.0/24</code>. Skip <code>10.0–10.10</code>, <code>10.42–43</code>, <code>10.64–127</code>, <code>10.88–89</code>, <code>10.96–111</code> and <code>10.244</code>.</li>
+        <li><b>Avoid 172.17–172.31</b> if anything on the network runs Docker, WSL2 or Hyper-V.</li>
+        <li><b>192.168.x is crowded.</b> Anything under ~<code>192.168.10</code> is a router default somewhere, plus 43, 49, 50, 56, 64–71, 86, 88, 100, 122, 137, 178.</li>
+        <li><b>Don’t use <code>100.64.0.0/10</code></b> for a LAN. ISPs (CGNAT) and Tailscale already live there.</li>
+        <li><b>IPv6:</b> use <code>fd</code> + 40 random bits for your /48. Never use <code>fc00::/8</code> or a hand-picked <code>fd00::</code>.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>How crowded is each block?</h2>
+      <div class="strip-label"><span>10.<b>N</b>.0.0/16</span><span>N = 0 → 255</span></div>
+      <div class="strip s256" id="s10"></div>
+      <div class="strip-label"><span>172.<b>N</b>.0.0/16</span><span>N = 16 → 31</span></div>
+      <div class="strip s16" id="s172"></div>
+      <div class="strip-label"><span>192.168.<b>N</b>.0/24</span><span>N = 0 → 255</span></div>
+      <div class="strip s256" id="s192"></div>
+      <div class="legend"><span><i style="background:var(--h0)"></i>no known default</span><span><i style="background:var(--h1)"></i>minor</span><span><i style="background:var(--h2)"></i>some</span><span><i style="background:var(--h3)"></i>busy</span><span><i style="background:var(--h4)"></i>very busy</span></div>
+      <div id="tip">Hover a cell to see what uses it. Click to check it.</div>
+    </div>
+  </div>
+
+  <div class="filters" id="filters"></div>
+  <div id="list"></div>
+
+  <footer>Risk levels: <b>Never use</b> = reserved/special, will break things. <b>Very common</b> = a fixed default on popular gear. <b>Common</b>/<b>Occasional</b> = defaults on less common tools. <i>varies</i> = the tool picks a random block inside that range. Click any range to copy it. Defaults change between firmware and versions, so check against your own gear.</footer>
+</div>
+<div id="toast"></div>
+
+<script>
+const CATS={std:'Reserved, special-purpose & ISP',hotspot:'Phone & PC hotspots',router:'Router defaults',container:'Containers & Kubernetes',vm:'Virtual machines',vpn:'VPNs & overlay networks',cloud:'Cloud'};
+const RISK={reserved:'Never use',high:'Very common',med:'Common',low:'Occasional',info:'Private block'};
+const W={reserved:3,high:3,med:2,low:1,info:0};
+const D=[];
+const E=(cat,r,risk,name,note='',v=false)=>D.push({cat,r,risk,name,note,v});
+
+// ---- Reserved / special / ISP
+E('std','10.0.0.0/8','info','RFC 1918 private','16.7M addresses. Heavily carved up by Docker Swarm, Kubernetes, VPNs and clouds (see below).');
+E('std','172.16.0.0/12','info','RFC 1918 private','172.16.0.0 – 172.31.255.255. Docker, WSL2 and Hyper-V take /16s and /20s from here.');
+E('std','192.168.0.0/16','info','RFC 1918 private','The most collision-prone block. Almost every consumer router, hotspot and VM tool defaults somewhere in here.');
+E('std','100.64.0.0/10','high','Shared Address Space / CGNAT (RFC 6598)','100.64.0.0 – 100.127.255.255. ISPs use it between your router and their carrier-grade NAT (Starlink, most 4G/5G, many NBN providers). Tailscale, NetBird and Cloudflare Zero Trust use it too.');
+E('std','0.0.0.0/8','reserved','“This network”','0.0.0.0 means “any/unspecified”. Not routable.');
+E('std','127.0.0.0/8','reserved','Loopback','The whole /8 is loopback, not only 127.0.0.1.');
+E('std','169.254.0.0/16','reserved','Link-local / APIPA','Self-assigned when DHCP fails. Cloud metadata lives at 169.254.169.254.');
+E('std','192.0.0.0/24','reserved','IETF protocol assignments','Includes DS-Lite and 464XLAT addresses (below).');
+E('std','192.0.0.0/29','med','464XLAT CLAT / DS-Lite','iPhones and Androids on IPv6-only mobile networks (e.g. T-Mobile US) show 192.0.0.2–.4 as their IPv4.');
+E('std','192.0.2.0/24','reserved','TEST-NET-1 (documentation)','For examples in docs only.');
+E('std','198.51.100.0/24','reserved','TEST-NET-2 (documentation)');
+E('std','203.0.113.0/24','reserved','TEST-NET-3 (documentation)');
+E('std','198.18.0.0/15','reserved','Benchmarking (RFC 2544)','198.18.0.0 – 198.19.255.255. Also the default “fake-IP” pool for Clash, Surge, sing-box, Stash and similar proxy apps.');
+E('std','192.88.99.0/24','reserved','Deprecated 6to4 relay anycast');
+E('std','224.0.0.0/4','reserved','Multicast','224.0.0.251 = mDNS, 239.255.255.250 = SSDP/UPnP.');
+E('std','240.0.0.0/4','reserved','Reserved (former Class E)','Unroutable on most OSes and hardware. Includes 255.255.255.255 broadcast.');
+E('std','10.0.0.0/8','low','Mobile carrier NAT','Your phone’s cellular WAN address is often 10.x.',true);
+E('std','::/128','reserved','Unspecified address');
+E('std','::1/128','reserved','Loopback');
+E('std','::ffff:0:0/96','reserved','IPv4-mapped IPv6','::ffff:192.168.1.10 is an IPv4 address seen through a dual-stack socket.');
+E('std','64:ff9b::/96','reserved','NAT64 well-known prefix','Used with DNS64 on IPv6-only networks (mobile carriers, Apple’s App Store review network).');
+E('std','64:ff9b:1::/48','reserved','Local-use NAT64 (RFC 8215)');
+E('std','100::/64','reserved','Discard-only (RFC 6666)');
+E('std','2001::/32','reserved','Teredo');
+E('std','2001:2::/48','reserved','Benchmarking');
+E('std','2001:db8::/32','reserved','Documentation');
+E('std','3fff::/20','reserved','Documentation (RFC 9637)','Newer, larger documentation prefix (2024).');
+E('std','2002::/16','reserved','6to4');
+E('std','fc00::/7','info','Unique Local Addresses (ULA, RFC 4193)','The IPv6 equivalent of RFC 1918. Split into fc00::/8 and fd00::/8.');
+E('std','fc00::/8','med','ULA with L-bit = 0 (“fc”)','Never formally defined, because no allocation authority was ever created. cjdns/Hyperboria, ZeroTier 6PLANE and Mullvad use it anyway. Use fd instead.');
+E('std','fd00::/8','info','ULA, locally assigned (“fd”)','Use this one: fd + 40 random bits = your /48. Try the generator above.');
+E('std','fd00::/48','high','“Lazy” ULA','fd00::/64, fd00::1 and similar are hand-picked by everyone (AVM FRITZ!Box’s default ULA is fd00::/64), which defeats the point of random ULAs.');
+E('std','fe80::/10','reserved','Link-local','Every IPv6 interface has one (fe80::/64 in practice). Needs a zone ID, e.g. fe80::1%en0.');
+E('std','fec0::/10','reserved','Site-local (deprecated 2004)');
+E('std','ff00::/8','reserved','Multicast','ff02::1 = all nodes, ff02::2 = all routers, ff02::fb = mDNS.');
+E('std','200::/7','low','Yggdrasil mesh','0200::/7 is reserved global space that Yggdrasil uses anyway.');
+
+// ---- Hotspots
+E('hotspot','172.20.10.0/28','high','iPhone / iPad Personal Hotspot','Phone is 172.20.10.1; clients get .2–.14. Fixed and can’t be changed.');
+E('hotspot','192.168.43.0/24','high','Android hotspot (Android ≤ 10, many OEM builds)','Phone is 192.168.43.1.');
+E('hotspot','192.168.0.0/16','med','Android 11+ hotspot (randomised)','Picks a random /24 each time it starts, avoiding the upstream network.',true);
+E('hotspot','192.168.42.0/24','med','Android USB tethering (legacy)');
+E('hotspot','192.168.44.0/24','low','Android Bluetooth tethering (legacy)');
+E('hotspot','192.168.49.0/24','med','Android Wi-Fi Direct group owner','minikube uses the same block (see Containers).');
+E('hotspot','192.168.137.0/24','high','Windows Mobile Hotspot / Internet Connection Sharing','PC is 192.168.137.1.');
+E('hotspot','192.168.2.0/24','med','macOS Internet Sharing','Mac is 192.168.2.1 on bridge100.');
+E('hotspot','192.168.8.0/24','med','Huawei pocket Wi-Fi / 4G routers, GL.iNet travel routers','Gateway 192.168.8.1.');
+
+// ---- Routers
+E('router','192.168.1.0/24','high','Linksys, Netgear, newer TP-Link Archer, older ASUS, OpenWrt, pfSense, OPNsense, UniFi, Verizon Fios, Starlink router','Gateway 192.168.1.1 (AT&T gateways use 192.168.1.254). Probably the most common LAN in the world.');
+E('router','192.168.0.0/24','high','TP-Link, D-Link, Tenda, some Netgear','Gateway 192.168.0.1.');
+E('router','192.168.68.0/22','high','TP-Link Deco mesh','192.168.68.1, spanning 192.168.68.0 – 192.168.71.255.');
+E('router','10.0.0.0/24','high','Comcast Xfinity and other ISP gateways','Gateway 10.0.0.1. It’s also the first thing everyone types for WireGuard and lab networks.');
+E('router','192.168.50.0/24','med','ASUS (current firmware)','Gateway 192.168.50.1.');
+E('router','192.168.86.0/24','med','Google Wifi / Nest Wifi','Gateway 192.168.86.1.');
+E('router','192.168.4.0/22','med','Amazon eero','Gateway 192.168.4.1.');
+E('router','192.168.88.0/24','med','MikroTik','Gateway 192.168.88.1.');
+E('router','192.168.178.0/24','med','AVM FRITZ!Box','Gateway 192.168.178.1.');
+E('router','192.168.100.0/24','med','Cable modem & Starlink dish management','192.168.100.1 reaches DOCSIS modems and the Starlink dish, even in bridge mode. Don’t put a LAN here.');
+E('router','192.168.31.0/24','low','Xiaomi / Redmi routers','Gateway 192.168.31.1.');
+E('router','192.168.3.0/24','low','Huawei home routers','Gateway 192.168.3.1.');
+E('router','10.0.1.0/24','low','Apple AirPort (discontinued)','Gateway 10.0.1.1.');
+
+// ---- Containers
+E('container','172.17.0.0/16','high','Docker default bridge (docker0)','Containers get 172.17.0.x; host is 172.17.0.1.');
+E('container','172.18.0.0-172.31.255.255','high','Docker Compose / user-defined networks','The default pool hands out one /16 per network, in order: 172.18, 172.19, 172.20… Any LAN in 172.16/12 eventually collides.');
+E('container','192.168.0.0/16','med','Docker pool overflow','Once 172.17–31 are used up, Docker allocates /20s from 192.168.0.0/16.',true);
+E('container','10.0.0.0/8','med','Docker Swarm overlay pool','Overlay networks get /24s from 10.0.0.0/8; the ingress network is 10.0.0.0/24.',true);
+E('container','192.168.65.0/24','med','Docker Desktop VM network','host.docker.internal → 192.168.65.254.');
+E('container','192.168.138.0/23','med','OrbStack machines','Default network.subnet4. Change it with: orb config set network.subnet4 …');
+E('container','192.168.215.0/24','med','OrbStack Docker bridge','Extra Compose networks come from OrbStack’s own 192.168.x pool.');
+E('container','fd07:b51a:cc66::/48','low','OrbStack IPv6 (ULA)');
+E('container','10.88.0.0/16','med','Podman default network');
+E('container','10.89.0.0/16','med','Podman user-defined networks','/24s handed out from here (netavark).');
+E('container','192.168.127.0/24','low','Podman machine (gvproxy)');
+E('container','192.168.5.0/24','low','Lima / Colima user-mode network','Host reachable at 192.168.5.2.');
+E('container','10.96.0.0/12','high','Kubernetes service CIDR (kubeadm default)','10.96.0.0 – 10.111.255.255. kube-dns is usually 10.96.0.10.');
+E('container','10.244.0.0/16','high','Kubernetes pods: Flannel, kind');
+E('container','192.168.0.0/16','high','Kubernetes pods: Calico default','The whole /16, so it overlaps nearly every home LAN. Change --pod-network-cidr when you use Calico.');
+E('container','10.42.0.0/16','med','k3s / RKE2 pods');
+E('container','10.43.0.0/16','med','k3s / RKE2 services');
+E('container','10.1.0.0/16','med','MicroK8s pods');
+E('container','10.152.183.0/24','low','MicroK8s services');
+E('container','192.168.49.0/24','med','minikube (docker driver)','Same block as Android Wi-Fi Direct.');
+
+// ---- VMs
+E('vm','10.0.2.0/24','high','VirtualBox NAT, QEMU user-mode (slirp), Android Emulator','Host/gateway is 10.0.2.2, DNS is 10.0.2.3.');
+E('vm','192.168.122.0/24','high','libvirt / KVM / virt-manager (virbr0)','Default NAT network.');
+E('vm','192.168.56.0/24','med','VirtualBox host-only');
+E('vm','192.168.64.0/24','med','Apple Virtualization / vmnet shared','UTM, Tart, Multipass and Lima (vz) shared networking.');
+E('vm','10.211.55.0/24','med','Parallels Desktop shared network');
+E('vm','10.37.129.0/24','low','Parallels Desktop host-only');
+E('vm','172.16.0.0/12','high','WSL2 & Hyper-V Default Switch','A random /20 (e.g. 172.25.48.0/20) chosen at boot. It can change on every reboot.',true);
+E('vm','172.16.0.0/16','low','VMware Fusion / Workstation (vmnet1, vmnet8)','Random /24s, often 172.16.x.0/24 on Fusion and 192.168.x.0/24 on Workstation.',true);
+E('vm','10.0.0.0/8','low','LXD / Incus (lxdbr0)','Random 10.x.y.0/24 picked at init.',true);
+E('vm','100.115.92.0/23','med','ChromeOS ARC++ / Crostini','Inside CGNAT space. Tailscale deliberately avoids it.');
+
+// ---- VPN
+E('vpn','100.64.0.0/10','high','Tailscale / Headscale','Each device gets a stable 100.x.y.z. Can collide with ISP CGNAT.');
+E('vpn','100.100.100.100/32','high','Tailscale MagicDNS (Quad100)');
+E('vpn','fd7a:115c:a1e0::/48','high','Tailscale IPv6');
+E('vpn','100.64.0.0/10','med','NetBird','Peers get 100.x addresses.');
+E('vpn','100.96.0.0/12','med','Cloudflare Zero Trust (WARP) device IPs');
+E('vpn','172.16.0.2/32','low','Cloudflare WARP (1.1.1.1 app) tunnel address');
+E('vpn','10.8.0.0/24','high','OpenVPN default, wg-easy, PiVPN (OpenVPN)');
+E('vpn','10.6.0.0/24','med','PiVPN (WireGuard)');
+E('vpn','10.0.0.0/24','high','WireGuard tutorials','Nearly every WireGuard guide uses 10.0.0.1/24, and Xfinity uses the same block.');
+E('vpn','10.64.0.0/10','med','Mullvad VPN','WireGuard tunnel IPs in 10.64–10.127; DNS 10.64.0.1.');
+E('vpn','fc00:bbbb:bbbb:bb01::/64','low','Mullvad VPN IPv6');
+E('vpn','10.2.0.0/24','med','Proton VPN (WireGuard)','Client 10.2.0.2, DNS 10.2.0.1.');
+E('vpn','10.5.0.0/24','med','NordVPN (NordLynx)','Client 10.5.0.2.');
+E('vpn','10.0.0.0/8','low','ZeroTier','You pick a range per network. ZeroTier Central suggests ranges such as 10.147.17.0/24 and 10.144.0.0/16.',true);
+E('vpn','fc00::/8','low','ZeroTier 6PLANE / cjdns');
+E('vpn','25.0.0.0/8','med','LogMeIn Hamachi','This is public space (assigned to the UK MoD) that Hamachi uses anyway.');
+
+// ---- Cloud
+E('cloud','172.31.0.0/16','high','AWS default VPC','Every region’s default VPC uses it, so peering two default VPCs always overlaps.');
+E('cloud','10.0.0.0/16','med','AWS / Azure wizard default VPC/VNet');
+E('cloud','10.128.0.0/9','med','Google Cloud auto-mode VPC','Each region gets a /20 inside 10.128.0.0/9.');
+E('cloud','169.254.169.254/32','reserved','Instance metadata (AWS, GCP, Azure, OCI, DigitalOcean)');
+E('cloud','169.254.169.253/32','low','AWS VPC DNS resolver (link-local)');
+E('cloud','fd00:ec2::254/128','reserved','AWS instance metadata (IPv6)');
+E('cloud','168.63.129.16/32','reserved','Azure platform (DNS, health probes)','A public address with special meaning inside Azure.');
+
+// ---------- address math ----------
+function p4(s){const a=s.split('.');if(a.length!==4)return null;let n=0n;for(const x of a){if(!/^\d{1,3}$/.test(x)||+x>255)return null;n=(n<<8n)|BigInt(+x)}return n}
+function p6(s){
+  if(!s.includes(':'))return null;s=s.replace(/%.*$/,'');
+  const parts=s.split('::');if(parts.length>2)return null;
+  const h=parts[0]?parts[0].split(':'):[],t=parts.length===2&&parts[1]?parts[1].split(':'):[];
+  for(const arr of [h,t]){const last=arr[arr.length-1];if(last&&last.includes('.')){const v=p4(last);if(v===null)return null;arr.splice(-1,1,(v>>16n).toString(16),(v&0xffffn).toString(16))}}
+  const fill=8-h.length-t.length;
+  if(parts.length===1&&fill!==0)return null;if(parts.length===2&&fill<1)return null;
+  const all=[...h,...Array(parts.length===2?fill:0).fill('0'),...t];let n=0n;
+  for(const g of all){if(!/^[0-9a-f]{1,4}$/i.test(g))return null;n=(n<<16n)|BigInt('0x'+g)}return n}
+function pa(s){let n=p4(s);if(n!==null)return{v:4,n};n=p6(s);if(n!==null)return{v:6,n};return null}
+function pr(s){
+  s=s.trim().toLowerCase();if(!s)return null;
+  if(s.includes('-')&&!s.includes('/')){const[a,b]=s.split('-');const A=pa(a.trim()),B=pa((b||'').trim());if(!A||!B||A.v!==B.v)return null;return{v:A.v,lo:A.n<B.n?A.n:B.n,hi:A.n<B.n?B.n:A.n}}
+  if(s.includes('/')){const[a,p]=s.split('/');const A=pa(a);if(!A||!/^\d+$/.test(p))return null;const bits=A.v===4?32:128,pl=+p;if(pl>bits)return null;const size=1n<<BigInt(bits-pl);const lo=A.n-(A.n%size);return{v:A.v,lo,hi:lo+size-1n,p:pl}}
+  const A=pa(s);if(!A)return null;return{v:A.v,lo:A.n,hi:A.n,p:A.v===4?32:128}}
+const f4=n=>[24,16,8,0].map(s=>Number((n>>BigInt(s))&255n)).join('.');
+function f6(n){const g=[];for(let i=7;i>=0;i--)g.push(Number((n>>BigInt(i*16))&0xffffn));let bs=-1,bl=0;for(let i=0;i<8;){if(g[i]===0){let j=i;while(j<8&&g[j]===0)j++;if(j-i>bl&&j-i>1){bs=i;bl=j-i}i=j}else i++}
+  const hx=g.map(x=>x.toString(16));if(bs<0)return hx.join(':');return hx.slice(0,bs).join(':')+'::'+hx.slice(bs+bl).join(':')}
+const fa=(v,n)=>v===4?f4(n):f6(n);
+D.forEach(e=>e.R=pr(e.r));
+const ov=(a,b)=>a.v===b.v&&a.lo<=b.hi&&b.lo<=a.hi;
+const inside=(a,b)=>a.v===b.v&&a.lo>=b.lo&&a.hi<=b.hi;
+function bits(R){const sz=R.hi-R.lo+1n;let k=0;while((1n<<BigInt(k))<sz)k++;return k}
+
+// ---------- heat strips ----------
+function cellInfo(cell,parent){const hits=D.filter(e=>!e.v&&e.risk!=='info'&&ov(e.R,cell)&&!inside(parent,e.R));return{hits,score:hits.reduce((s,e)=>s+W[e.risk],0)}}
+const lvl=s=>s===0?0:s<=1?1:s<=2?2:s<=4?3:4;
+function strip(id,parentS,mk,from,to,lab){
+  const el=document.getElementById(id),parent=pr(parentS);
+  for(let n=from;n<=to;n++){const cidr=mk(n),c=pr(cidr),{hits,score}=cellInfo(c,parent);
+    const d=document.createElement('div');d.className='cell c'+lvl(score);if(lab)d.textContent=n;
+    d.dataset.cidr=cidr;d.dataset.tip=cidr+': '+(hits.length?[...new Set(hits.map(h=>h.name))].join(' · '):'no known defaults');
+    d.onmouseenter=()=>tip.textContent=d.dataset.tip;d.onclick=()=>setQ(cidr);el.appendChild(d)}}
+const tip=document.getElementById('tip');
+strip('s10','10.0.0.0/8',n=>`10.${n}.0.0/16`,0,255);
+strip('s172','172.16.0.0/12',n=>`172.${n}.0.0/16`,16,31,true);
+strip('s192','192.168.0.0/16',n=>`192.168.${n}.0/24`,0,255);
+
+// ---------- list ----------
+let fam='all',cat='all';
+const filters=document.getElementById('filters');
+function chips(){filters.innerHTML='';
+  const add=(lab,on,fn)=>{const b=document.createElement('button');b.textContent=lab;if(on)b.className='on';b.onclick=fn;filters.appendChild(b)};
+  [['all','All'],['4','IPv4'],['6','IPv6']].forEach(([k,l])=>add(l,fam===k,()=>{fam=k;chips();render()}));
+  const s=document.createElement('span');s.className='sep';filters.appendChild(s);
+  add('All categories',cat==='all',()=>{cat='all';chips();render()});
+  Object.entries(CATS).forEach(([k,l])=>add(l,cat===k,()=>{cat=k;chips();render()}));}
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function spanTxt(e){const R=e.R;if(R.lo===R.hi)return '';
+  if(R.v===4){const c=R.hi-R.lo+1n;return `${f4(R.lo)} – ${f4(R.hi)} · ${c.toLocaleString()} addresses`}
+  return `${f6(R.lo)} – ${f6(R.hi)}`}
+function rel(q,e){if(inside(q,e.R))return q.lo===e.R.lo&&q.hi===e.R.hi?'exact':'inside';if(inside(e.R,q))return 'contains';return 'partial'}
+const list=document.getElementById('list'),qEl=document.getElementById('q'),vEl=document.getElementById('verdict');
+function render(){
+  const raw=qEl.value.trim(),Q=pr(raw),txt=raw.toLowerCase();
+  list.innerHTML='';let total=0;
+  for(const[k,label]of Object.entries(CATS)){
+    if(cat!=='all'&&cat!==k)continue;
+    let rows=D.filter(e=>e.cat===k&&(fam==='all'||String(e.R.v)===fam));
+    if(Q)rows=rows.filter(e=>ov(Q,e.R));
+    else if(txt)rows=rows.filter(e=>(e.r+' '+e.name+' '+e.note+' '+label+' '+RISK[e.risk]).toLowerCase().includes(txt));
+    if(!rows.length)continue;total+=rows.length;
+    rows.sort((a,b)=>a.R.v-b.R.v||(a.R.lo<b.R.lo?-1:a.R.lo>b.R.lo?1:0));
+    const sec=document.createElement('section');sec.className='cat';
+    sec.innerHTML=`<h3>${label}</h3><div class="entries">${rows.map(e=>`
+      <div class="e${Q?' hit':''}">
+        <div><div class="range" data-copy="${esc(e.r)}">${esc(e.r)}${Q?`<span class="rel">${rel(Q,e)}</span>`:''}</div><div class="span">${spanTxt(e)}</div></div>
+        <div class="desc"><div class="name">${esc(e.name)}</div>${e.note?`<div class="note">${esc(e.note)}</div>`:''}${e.v?'<div class="var">varies: picks a random block inside this range</div>':''}</div>
+        <div class="badge b-${e.risk}">${RISK[e.risk]}</div>
+      </div>`).join('')}</div>`;
+    list.appendChild(sec)}
+  if(!total)list.innerHTML='<div class="entries"><div class="empty">Nothing matches.</div></div>';
+  verdict(Q,raw)}
+function verdict(Q,raw){
+  if(!raw){vEl.style.display='none';return}
+  vEl.style.display='block';
+  if(!Q){vEl.className='verdict v-i';vEl.innerHTML='<b>Text search</b><span>Enter an IP, CIDR (10.1.2.0/24) or range (a–b) to check for conflicts.</span>';return}
+  const m=D.filter(e=>e.risk!=='info'&&ov(Q,e.R));
+  const fixed=m.filter(e=>!e.v),vary=m.filter(e=>e.v);
+  const has=r=>fixed.some(e=>e.risk===r);
+  const names=a=>[...new Set(a.map(e=>e.name))].slice(0,4).join(' · ')+(new Set(a.map(e=>e.name)).size>4?' …':'');
+  const size=Q.v===4?`${f4(Q.lo)} – ${f4(Q.hi)}`:`${f6(Q.lo)} – ${f6(Q.hi)}`;
+  const priv=['10.0.0.0/8','172.16.0.0/12','192.168.0.0/16','fc00::/7'].some(p=>inside(Q,pr(p)));
+  let cls,head,body;
+  if(has('reserved')){cls='v-r';head='Reserved: don’t use this';body=names(fixed.filter(e=>e.risk==='reserved'))}
+  else if(has('high')){cls='v-h';head='Very likely to collide';body=names(fixed.filter(e=>e.risk==='high'))}
+  else if(has('med')){cls='v-m';head='Could collide';body=names(fixed.filter(e=>e.risk==='med'))}
+  else if(has('low')){cls='v-l';head='Minor risk';body=names(fixed)}
+  else if(!priv){cls='v-i';head='Not in a private range';body='This is public address space. Don’t use it for a LAN unless you own it.'}
+  else{cls='v-ok';head='No known fixed defaults here';body=vary.length?'Only tools that pick random blocks could land here: '+names(vary):'Looks clear.'}
+  if(Q.v===6&&inside(Q,pr('fc00::/8'))&&cls!=='v-r'){cls='v-m';head='fc00::/8 is not meant to be used';body='Use fd00::/8 with a random 40-bit global ID instead.'}
+  vEl.className='verdict '+cls;vEl.innerHTML=`<b>${head}</b><span>${esc(body)}</span><br><span class="mono" style="opacity:.8">${size}</span>`}
+
+// ---------- actions ----------
+function setQ(s){qEl.value=s;render();qEl.scrollIntoView({behavior:'smooth',block:'center'})}
+qEl.addEventListener('input',render);
+document.getElementById('clear').onclick=()=>{qEl.value='';render()};
+function rnd(n){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n}
+document.getElementById('suggest').onclick=()=>{
+  const p=pr('10.0.0.0/8');
+  for(let i=0;i<2000;i++){const a=rnd(256),b=rnd(256),c=pr(`10.${a}.${b}.0/24`);
+    const block=pr(`10.${a}.0.0/16`);
+    if(cellInfo(block,p).score===0&&!D.some(e=>!e.v&&e.risk!=='info'&&ov(e.R,c))){setQ(`10.${a}.${b}.0/24`);return}}};
+document.getElementById('ula').onclick=()=>{
+  const b=new Uint8Array(5);crypto.getRandomValues(b);const h=[...b].map(x=>x.toString(16).padStart(2,'0'));
+  setQ(`fd${h[0]}:${h[1]}${h[2]}:${h[3]}${h[4]}::/48`)};
+const toast=document.getElementById('toast');
+list.addEventListener('click',ev=>{const t=ev.target.closest('[data-copy]');if(!t)return;
+  try{navigator.clipboard.writeText(t.dataset.copy);toast.textContent='Copied '+t.dataset.copy}catch(e){toast.textContent=t.dataset.copy}
+  toast.style.opacity=1;clearTimeout(toast._t);toast._t=setTimeout(()=>toast.style.opacity=0,1200)});
+document.getElementById('theme').onclick=()=>{const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('theme',r.dataset.theme)}catch(e){}};
+try{const t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
+chips();render();
+</script>
+</body>
+</html>
