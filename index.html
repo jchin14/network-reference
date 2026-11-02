@@ -54,12 +54,13 @@ ul.rules{margin:0;padding-left:18px}ul.rules li{margin:4px 0}
 .strip-label{font-size:13px;color:var(--muted);margin:14px 0 6px;display:flex;justify-content:space-between;gap:8px}
 .strip{display:grid;gap:2px}
 .s256{grid-template-columns:repeat(32,1fr)}
-.s16{grid-template-columns:repeat(16,1fr)}
+.s172{grid-template-columns:26px repeat(16,1fr)}
+.s172 .cell{aspect-ratio:auto;height:15px}
+.ax{font:10px/1 var(--mono);color:var(--muted);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ax.y{justify-content:flex-end;padding-right:4px}
 .cell{aspect-ratio:1;border-radius:2px;background:var(--h0);cursor:pointer;position:relative}
-.s16 .cell{aspect-ratio:auto;height:28px;font:11px var(--mono);display:flex;align-items:center;justify-content:center;color:var(--muted)}
 .cell:hover{outline:2px solid var(--accent);z-index:1}
 .c1{background:var(--h1)}.c2{background:var(--h2)}.c3{background:var(--h3)}.c4{background:var(--h4)}
-.s16 .c3,.s16 .c4{color:#fff}
 .legend{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap;margin-top:10px}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-2px;margin-right:4px}
 #tip{font-size:12.5px;color:var(--muted);min-height:2.6em;margin-top:8px}
@@ -128,8 +129,8 @@ footer{color:var(--muted);font-size:12.5px;margin-top:30px}
       <h2>How crowded is each block?</h2>
       <div class="strip-label"><span>10.<b>N</b>.0.0/16</span><span>N = 0 → 255</span></div>
       <div class="strip s256" id="s10"></div>
-      <div class="strip-label"><span>172.<b>N</b>.0.0/16</span><span>N = 16 → 31</span></div>
-      <div class="strip s16" id="s172"></div>
+      <div class="strip-label"><span>172.<b>Y</b>.<b>X</b>.0/20</span><span>Y = 16 → 31 (rows) · X = 0 → 240 (cols)</span></div>
+      <div class="strip s172" id="s172"></div>
       <div class="strip-label"><span>192.168.<b>N</b>.0/24</span><span>N = 0 → 255</span></div>
       <div class="strip s256" id="s192"></div>
       <div class="legend"><span><i style="background:var(--h0)"></i>no known default</span><span><i style="background:var(--h1)"></i>minor</span><span><i style="background:var(--h2)"></i>some</span><span><i style="background:var(--h3)"></i>busy</span><span><i style="background:var(--h4)"></i>very busy</span></div>
@@ -305,16 +306,20 @@ function bits(R){const sz=R.hi-R.lo+1n;let k=0;while((1n<<BigInt(k))<sz)k++;retu
 // ---------- heat strips ----------
 function cellInfo(cell,parent){const hits=D.filter(e=>!e.v&&e.risk!=='info'&&ov(e.R,cell)&&!inside(parent,e.R));return{hits,score:hits.reduce((s,e)=>s+W[e.risk],0)}}
 const lvl=s=>s===0?0:s<=1?1:s<=2?2:s<=4?3:4;
-function strip(id,parentS,mk,from,to,lab){
+function mkCell(cidr,parent){const{hits,score}=cellInfo(pr(cidr),parent);
+  const d=document.createElement('div');d.className='cell c'+lvl(score);
+  d.dataset.cidr=cidr;d.dataset.tip=cidr+': '+(hits.length?[...new Set(hits.map(h=>h.name))].join(' · '):'no known defaults');
+  d.onmouseenter=()=>tip.textContent=d.dataset.tip;d.onclick=()=>setQ(cidr);return d}
+function strip(id,parentS,mk,from,to){
   const el=document.getElementById(id),parent=pr(parentS);
-  for(let n=from;n<=to;n++){const cidr=mk(n),c=pr(cidr),{hits,score}=cellInfo(c,parent);
-    const d=document.createElement('div');d.className='cell c'+lvl(score);if(lab)d.textContent=n;
-    d.dataset.cidr=cidr;d.dataset.tip=cidr+': '+(hits.length?[...new Set(hits.map(h=>h.name))].join(' · '):'no known defaults');
-    d.onmouseenter=()=>tip.textContent=d.dataset.tip;d.onclick=()=>setQ(cidr);el.appendChild(d)}}
+  for(let n=from;n<=to;n++)el.appendChild(mkCell(mk(n),parent))}
 const tip=document.getElementById('tip');
 strip('s10','10.0.0.0/8',n=>`10.${n}.0.0/16`,0,255);
-strip('s172','172.16.0.0/12',n=>`172.${n}.0.0/16`,16,31,true);
 strip('s192','192.168.0.0/16',n=>`192.168.${n}.0/24`,0,255);
+(function(){const el=document.getElementById('s172'),parent=pr('172.16.0.0/12');
+  const ax=(t,c='')=>{const d=document.createElement('div');d.className='ax '+c;d.textContent=t;el.appendChild(d)};
+  ax('');for(let x=0;x<256;x+=16)ax(x);
+  for(let y=16;y<=31;y++){ax(y,'y');for(let x=0;x<256;x+=16)el.appendChild(mkCell(`172.${y}.${x}.0/20`,parent))}})();
 
 // ---------- list ----------
 let fam='all',cat='all';
