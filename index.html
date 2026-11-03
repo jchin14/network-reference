@@ -545,7 +545,7 @@ const ch=(base,list,w)=>list.map(n=>({n,w,c:base+5*n}));
 const rng=(a,b,s)=>{const r=[];for(let i=a;i<=b;i+=s)r.push(i);return r};
 const WB={
   '2.4':{lab:'2.4 GHz',lo:2400,hi:2484,tick:20,subs:[['b24',2400,2483.5,'ISM 2400–2483.5 MHz']],
-    rows:[[20,ch(2407,[1,6,11],20),'1·6·11'],[20,ch(2407,[1,5,9,13],20),'1·5·9·13'],[40,[{n:'',w:40,c:2442,span:[2402,2482]}]],[80,[{n:'',w:80,c:2442,span:[2402,2482]}]],[160,[{n:'',w:160,c:2442,span:[2402,2482]}]]]},
+    rows:[[20,ch(2407,[1,6,11],20),'1·6·11 best'],[20,ch(2407,[1,5,9,13],20),'1·5·9·13 more'],[40,[{n:'',w:40,c:2442,span:[2402,2482]}]],[80,[{n:'',w:80,c:2442,span:[2402,2482]}]],[160,[{n:'',w:160,c:2442,span:[2402,2482]}]]]},
   '5':{lab:'5 GHz',lo:5150,hi:5900,tick:50,subs:[['u1',5150,5250,'UNII-1'],['u2a',5250,5350,'UNII-2a'],['u2c',5470,5730,'UNII-2c'],['u3',5730,5850,'UNII-3']],
     rows:[[20,ch(5000,[...rng(36,64,4),...rng(100,144,4),...rng(149,165,4)],20)],[40,ch(5000,[38,46,54,62,102,110,118,126,134,142,151,159],40)],[80,ch(5000,[42,58,106,122,138,155],80)],[160,ch(5000,[50,114,163],160)]]},
   '6':{lab:'6 GHz',lo:5925,hi:6425,tick:50,subs:[['u5',5925,6425,'UNII-5 (5925–6425 MHz)']],
@@ -577,7 +577,7 @@ wbtns();wdraw();
 (function(){const dfsCell=r=>r.dfs?'<span class="badge b-med">DFS · TPC</span>':'—';
   const lim=(a,b,dfs)=>a===0?'<span class="badge b-reserved">Not permitted</span>':dfs?`<div class="pw">${pwd(a)}</div><div class="sub">with TPC · ${pw(b)} (${Math.round(dbm(b))} dBm) without</div>`:`<div class="pw">${pwd(a)}</div>`;
   const rows=[
-    ['2.4 GHz','ISM-B','1–13','1, 6, 11 or 1, 5, 9, 13 don’t overlap','20 MHz','40 MHz permitted but discouraged',WR.b24],
+    ['2.4 GHz','ISM-B','1–13','1, 6, 11 recommended; 1, 5, 9, 13 if you need more channels','20 MHz','40 MHz permitted but discouraged',WR.b24],
     ['5 GHz','UNII-1','36–48','5150–5250 MHz','20–160 MHz','',WR.u1],
     ['5 GHz','UNII-2a','52–64','5250–5350 MHz','20–160 MHz','',WR.u2a],
     ['5 GHz','UNII-2c','100–112, 132–144','5470–5570, 5650–5730 MHz','20–80 MHz','160 MHz not permitted',WR.u2c],
