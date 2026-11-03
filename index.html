@@ -538,7 +538,7 @@ function wshow(el){const[bd,n,w,c,a,b]=el.dataset.k.split('|');const r=rule(bd,+
 wchart.addEventListener('mouseover',e=>{const b=e.target.closest('.blk');if(b)wshow(b)});
 wchart.addEventListener('click',e=>{const b=e.target.closest('.blk');if(b)wshow(b)});
 const wbands=document.getElementById('wbands');
-function wbtns(){wbands.innerHTML='';for(const k in WB){const b=document.createElement('button');b.textContent=WB[k].lab;if(k===wband)b.className='on';b.onclick=()=>{wband=k;wbtns();wdraw()};wbands.appendChild(b)}}
+function wbtns(){wbands.innerHTML='';for(const k of ['2.4','5','6']){const b=document.createElement('button');b.textContent=WB[k].lab;if(k===wband)b.className='on';b.onclick=()=>{wband=k;wbtns();wdraw()};wbands.appendChild(b)}}
 wbtns();wdraw();
 // summary table
 (function(){const dfsCell=r=>r.dfs?'<span class="badge b-med">DFS · TPC</span>':'—';
