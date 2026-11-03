@@ -577,7 +577,7 @@ wbtns();wdraw();
 (function(){const dfsCell=r=>r.dfs?'<span class="badge b-med">DFS · TPC</span>':'—';
   const lim=(a,b,dfs)=>a===0?'<span class="badge b-reserved">Not permitted</span>':dfs?`<div class="pw">${pwd(a)}</div><div class="sub">with TPC · ${pw(b)} (${Math.round(dbm(b))} dBm) without</div>`:`<div class="pw">${pwd(a)}</div>`;
   const rows=[
-    ['2.4 GHz','ISM-B','1–13','1, 6, 11 recommended; 1, 5, 9, 13 if you need more channels','20 MHz','40 MHz permitted but discouraged',WR.b24],
+    ['2.4 GHz','ISM-B','1–13','1, 6, 11 recommended, especially in crowded areas, since most networks use it (US guides suggest it because 12–13 aren\u2019t allowed there). 1, 5, 9, 13 only if neighbours use it too','20 MHz','40 MHz permitted but discouraged',WR.b24],
     ['5 GHz','UNII-1','36–48','5150–5250 MHz','20–160 MHz','',WR.u1],
     ['5 GHz','UNII-2a','52–64','5250–5350 MHz','20–160 MHz','',WR.u2a],
     ['5 GHz','UNII-2c','100–112, 132–144','5470–5570, 5650–5730 MHz','20–80 MHz','160 MHz not permitted',WR.u2c],
