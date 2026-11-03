@@ -108,7 +108,7 @@ table.lim{width:100%;border-collapse:collapse;font-size:13.5px;min-width:700px}
 .lim .badge{display:inline-block}
 .pw b{font-weight:600}.pw .mono,.lim td .mono{color:var(--muted);font-size:12px;margin-left:5px}
 .chart{min-width:880px;display:grid;grid-template-columns:56px 1fr;row-gap:4px}
-.rl{font:11px/1 var(--mono);color:var(--muted);display:flex;align-items:center}
+.rl{font:11px/1 var(--mono);color:var(--muted);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px}.rl small{font-size:9px;opacity:.8}
 .track{position:relative;height:28px}
 .track.sb{height:20px}.track.axis{height:14px}
 .blk{position:absolute;top:0;bottom:0;border-radius:4px;font:11px/1 var(--mono);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;box-shadow:inset 0 0 0 1px var(--panel)}
@@ -539,18 +539,18 @@ const ch=(base,list,w)=>list.map(n=>({n,w,c:base+5*n}));
 const rng=(a,b,s)=>{const r=[];for(let i=a;i<=b;i+=s)r.push(i);return r};
 const WB={
   '2.4':{lab:'2.4 GHz',lo:2400,hi:2484,tick:20,subs:[['b24',2400,2483.5,'ISM 2400–2483.5 MHz']],
-    rows:[[20,ch(2407,[1,6,11],20)],[40,[{n:'',w:40,c:2442,span:[2402,2482]}]],[80,[{n:'',w:80,c:2442,span:[2402,2482]}]],[160,[{n:'',w:160,c:2442,span:[2402,2482]}]]]},
+    rows:[[20,ch(2407,[1,6,11],20),'1·6·11'],[20,ch(2407,[1,5,9,13],20),'1·5·9·13'],[40,[{n:'',w:40,c:2442,span:[2402,2482]}]],[80,[{n:'',w:80,c:2442,span:[2402,2482]}]],[160,[{n:'',w:160,c:2442,span:[2402,2482]}]]]},
   '5':{lab:'5 GHz',lo:5150,hi:5900,tick:50,subs:[['u1',5150,5250,'UNII-1'],['u2a',5250,5350,'UNII-2a'],['u2c',5470,5730,'UNII-2c'],['u3',5730,5850,'UNII-3']],
     rows:[[20,ch(5000,[...rng(36,64,4),...rng(100,144,4),...rng(149,165,4)],20)],[40,ch(5000,[38,46,54,62,102,110,118,126,134,142,151,159],40)],[80,ch(5000,[42,58,106,122,138,155],80)],[160,ch(5000,[50,114,163],160)]]},
   '6':{lab:'6 GHz',lo:5925,hi:6425,tick:50,subs:[['u5',5925,6425,'UNII-5 (5925–6425 MHz)']],
-    rows:[[20,ch(5950,rng(1,93,4),20)],[40,ch(5950,rng(3,91,8),40)],[80,ch(5950,rng(7,87,16),80)],[160,ch(5950,[15,47,79],160)]]}};
+    rows:[[20,ch(5950,rng(1,93,4),20)],[40,ch(5950,rng(3,91,8),40)],[80,ch(5950,rng(7,87,16),80)],[160,ch(5950,[15,47,79],160)],[320,ch(5950,[31],320),'320-1'],[320,ch(5950,[63],320),'320-2']]}};
 function lims(r){if(r.np)return r.np;
   const one=(a,b)=>a===0?'not permitted':r.dfs&&b!==a?`${pw(a)} (${Math.round(dbm(a))} dBm) with TPC, ${pw(b)} (${Math.round(dbm(b))} dBm) without`:`${pw(a)} (${Math.round(dbm(a))} dBm)`;
   return `<b>Indoor</b> ${one(r.i,r.ni)} · <b>Outdoor</b> ${one(r.o,r.no)}${r.dfs?' · <b>DFS required</b>':''}`}
 let wband='5';const wchart=document.getElementById('wchart'),wdet=document.getElementById('wdetail');
 function wdraw(){const B=WB[wband],pos=f=>((f-B.lo)/(B.hi-B.lo)*100)+'%',wid=(a,b)=>((b-a)/(B.hi-B.lo)*100)+'%';
   let h='<div class="rl"></div><div class="track sb">'+B.subs.map(([k,a,b,l])=>`<div class="sbl" style="left:${pos(a)};width:${wid(a,b)}">${l}</div>`).join('')+'</div>';
-  for(const[w,list]of B.rows){h+=`<div class="rl">${w} MHz</div><div class="track">`;
+  for(const[w,list,sub]of B.rows){h+=`<div class="rl">${w} MHz${sub?`<small>${sub}</small>`:''}</div><div class="track">`;
     for(const c of list){const r=rule(wband,c.c,w),[a,b]=c.span||[c.c-w/2,c.c+w/2];
       const mx=r.np?0:Math.max(r.i,r.o),q=r.np?'qx':mx<=250?'q1':mx<=1000?'q2':'q3';
       h+=`<div class="blk ${q}${r.dfs?' dfs':''}" style="left:${pos(a)};width:${wid(a,b)}" data-k="${wband}|${c.n}|${w}|${c.c}|${a}|${b}">${c.n||r.lab||r.np}</div>`}
@@ -571,13 +571,13 @@ wbtns();wdraw();
 (function(){const dfsCell=r=>r.dfs?'<span class="badge b-med">DFS · TPC</span>':'—';
   const lim=(a,b,dfs)=>a===0?'<span class="badge b-reserved">Not permitted</span>':dfs?`<div class="pw">${pwd(a)}</div><div class="sub">with TPC · ${pw(b)} (${Math.round(dbm(b))} dBm) without</div>`:`<div class="pw">${pwd(a)}</div>`;
   const rows=[
-    ['2.4 GHz','ISM-B','1–13','1, 6 and 11 don’t overlap','20 MHz','40 MHz permitted but discouraged',WR.b24],
+    ['2.4 GHz','ISM-B','1–13','1, 6, 11 or 1, 5, 9, 13 don’t overlap','20 MHz','40 MHz permitted but discouraged',WR.b24],
     ['5 GHz','UNII-1','36–48','5150–5250 MHz','20–160 MHz','',WR.u1],
     ['5 GHz','UNII-2a','52–64','5250–5350 MHz','20–160 MHz','',WR.u2a],
     ['5 GHz','UNII-2c','100–112, 132–144','5470–5570, 5650–5730 MHz','20–80 MHz','160 MHz not permitted',WR.u2c],
     ['5 GHz','UNII-2c','116–128','5570–5650 MHz','—','',WR.wr],
     ['5 GHz','UNII-3','149–165','5725–5850 MHz','20–80 MHz','160 MHz not permitted',WR.u3],
-    ['6 GHz','UNII-5','1–93','5925–6425 MHz','20–160 MHz','',WR.u5]];
+    ['6 GHz','UNII-5','1–93','5925–6425 MHz','20–320 MHz','320 MHz: channel 31 or 63',WR.u5]];
   document.getElementById('wtable').innerHTML='<tr><th>Band</th><th>Channels</th><th>Widths</th><th>Indoor EIRP</th><th>Outdoor EIRP</th><th>Needs</th><th>Licence s.</th></tr>'+
     rows.map(([b,s,c,cs,w,ws,r])=>`<tr><td><b>${b}</b><div class="sub">${s}</div></td><td><span class="mono">${c}</span><div class="sub">${cs}</div></td><td>${w}${ws?`<div class="sub">${ws}</div>`:''}</td>`+
       (r.np?`<td colspan="3"><span class="badge b-reserved">Not permitted</span><div class="sub">Reserved for weather radar</div></td>`:`<td>${lim(r.i,r.ni,r.dfs)}</td><td>${lim(r.o,r.no,r.dfs)}</td><td>${dfsCell(r)}</td>`)+
