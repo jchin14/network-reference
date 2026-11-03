@@ -183,7 +183,7 @@ h3.rsub{font-size:14px;font-weight:600;margin:18px 0 6px}
   <div class="filters" id="filters"></div>
   <div id="list"></div>
 
-  <footer>Risk levels: <b>Never use</b> = reserved/special, will break things. <b>Very common</b> = a fixed default on popular gear. <b>Common</b>/<b>Occasional</b> = defaults on less common tools. <i>varies</i> = the tool picks a random block inside that range. Click any range to copy it. Defaults change between firmware and versions, so check against your own gear.</footer>
+  <footer><b>Risk levels</b><ul class="rules"><li><b>Never use</b>: reserved/special, will break things.</li><li><b>Very common</b>: a fixed default on popular gear.</li><li><b>Common</b>/<b>Occasional</b>: defaults on less common tools.</li><li><i>varies</i>: the tool picks a random block inside that range.</li></ul>Click any range to copy it. Defaults change between firmware versions, so check your own gear.</footer>
   </div>
 
   <div class="panel" id="tab-wifi" role="tabpanel" hidden>
@@ -255,7 +255,7 @@ h3.rsub{font-size:14px;font-weight:600;margin:18px 0 6px}
     </div>
   </div>
 
-  <footer><b>EIRP</b> = radio power + antenna gain − cable loss. <b>DFS</b> (Dynamic Frequency Selection): the radio must listen for radar and leave the channel when it hears it. <b>TPC</b> (Transmit Power Control): the radio can cut its power by at least 6 dB; without it the DFS limit is halved. Data: <a href="https://wifiwizardofoz.com/wp-content/uploads/australian_802.11_eirp_transmit_power_limits_v2.0.pdf">Australian 802.11 EIRP Transmit Power Limits v2.0</a> (April 2024) by Brett Verney, based on the Radiocommunications (Low Interference Potential Devices) Class Licence (Variation 2023). Section numbers refer to that licence. Rules change, so check the current ACMA class licence before relying on this.</footer>
+  <footer><ul class="rules"><li><b>EIRP</b> = radio power + antenna gain − cable loss.</li><li><b>DFS</b>: the radio must listen for radar and leave the channel when it hears it.</li><li><b>TPC</b>: the radio can cut power by 6 dB or more. Without it, the DFS limit is halved.</li><li><b>Data</b>: <a href="https://wifiwizardofoz.com/wp-content/uploads/australian_802.11_eirp_transmit_power_limits_v2.0.pdf">Australian 802.11 EIRP Transmit Power Limits v2.0</a> (Brett Verney, April 2024), from the ACMA LIPD Class Licence (Variation 2023). Section numbers refer to that licence.</li><li>Rules change, so check the current ACMA licence before relying on this.</li></ul></footer>
   </div>
 </div>
 <div id="toast"></div>
