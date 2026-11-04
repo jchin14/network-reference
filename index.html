@@ -268,7 +268,7 @@ h3.rsub{font-size:14px;font-weight:600;margin:18px 0 6px}
 <div id="toast"></div>
 
 <script>
-const CATS={std:'Reserved, special-purpose & ISP',hotspot:'Phone & PC hotspots',router:'Router defaults',container:'Containers & Kubernetes',vm:'Virtual machines',vpn:'VPNs & overlay networks',cloud:'Cloud'};
+const CATS={std:'Reserved, special-purpose & ISP',hotspot:'Phone & PC hotspots',router:'Router defaults',container:'Containers & Kubernetes',vm:'Virtual machines',vpn:'VPNs & overlay networks',cloud:'Cloud',device:'Printers & devices'};
 const RISK={reserved:'Never use',high:'Very common',med:'Common',low:'Occasional',info:'Private block'};
 const W={reserved:3,high:3,med:2,low:1,info:0};
 const D=[];
@@ -398,6 +398,9 @@ E('cloud','169.254.169.254/32','reserved','Instance metadata (AWS, GCP, Azure, O
 E('cloud','169.254.169.253/32','low','AWS VPC DNS resolver (link-local)');
 E('cloud','fd00:ec2::254/128','reserved','AWS instance metadata (IPv6)');
 E('cloud','168.63.129.16/32','reserved','Azure platform (DNS, health probes)','A public address with special meaning inside Azure.');
+
+// ---- Printers & devices
+E('device','192.168.118.100-192.168.118.200','low','Brother printers','DHCP-style block for Brother printers, 192.168.118.100 – 192.168.118.200.');
 
 // ---------- address math ----------
 function p4(s){const a=s.split('.');if(a.length!==4)return null;let n=0n;for(const x of a){if(!/^\d{1,3}$/.test(x)||+x>255)return null;n=(n<<8n)|BigInt(+x)}return n}
