@@ -7,6 +7,10 @@ A one-page network reference with two tabs:
 
 It's a static page (`index.html`) with no build step and no dependencies.
 
+## Support
+
+If you find this useful and can afford to, support is appreciated: [buy me a coffee](https://buymeacoffee.com/jchin14). Just getting started, the domain, hosting, Cloudflare Workers and Apple and Google developer accounts add up to a few hundred dollars. Your support helps me keep making tools that are helpful for everyone.
+
 ## License
 
 [PolyForm Noncommercial 1.0.0](LICENSE). You're free to use, copy, modify and share this for any **noncommercial** purpose.
