@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Network Reference</title>
-<meta name="description" content="Network reference: private, reserved and commonly-used IP ranges (hotspots, routers, Docker, Tailscale, CGNAT, ULA) and Australian Wi-Fi EIRP power limits by band and channel.">
+<meta name="description" content="Network reference: private, reserved and commonly-used IP ranges (hotspots, routers, Docker, Tailscale, CGNAT, ULA), IPv6 prefixes for home, smart home and NAT, and Australian Wi-Fi EIRP power limits by band and channel.">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="logo.svg">
 <style>
@@ -83,7 +83,7 @@ section.cat h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;colo
 .rel{display:inline-block;font-size:11px;font-family:var(--mono);background:var(--accent);color:var(--panel);border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:1px}
 .badge{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:999px;text-align:center;white-space:nowrap;justify-self:end}
 .b-reserved{background:var(--r-bg);color:var(--r-fg)}.b-high{background:var(--h-bg);color:var(--h-fg)}.b-med{background:var(--m-bg);color:var(--m-fg)}
-.b-low{background:var(--l-bg);color:var(--l-fg)}.b-info{background:var(--i-bg);color:var(--i-fg)}
+.b-low{background:var(--l-bg);color:var(--l-fg)}.b-info{background:var(--i-bg);color:var(--i-fg)}.b-ok{background:var(--ok-bg);color:var(--ok-fg)}
 .var{font-size:11px;color:var(--muted);font-style:italic}
 @media (max-width:640px){
   .e{grid-template-columns:1fr auto;gap:4px 10px}
@@ -139,6 +139,7 @@ h3.rsub{font-size:14px;font-weight:600;margin:18px 0 6px}
   </div>
   <nav class="tabs" role="tablist">
     <a href="#ip" role="tab" data-tab="ip">IP ranges</a>
+    <a href="#v6" role="tab" data-tab="v6">IPv6</a>
     <a href="#wifi" role="tab" data-tab="wifi">Wi-Fi power limits (AU)</a>
   </nav>
 
@@ -160,9 +161,9 @@ h3.rsub{font-size:14px;font-weight:600;margin:18px 0 6px}
     <div class="card">
       <h2>Rules of thumb</h2>
       <ul class="rules">
-        <li><b>IPv4 LAN:</b> pick a random <code>10.x.y.0/24</code>. Skip <code>10.0–10.10</code>, <code>10.42–43</code>, <code>10.64–127</code>, <code>10.88–89</code>, <code>10.96–111</code> and <code>10.244</code>.</li>
-        <li><b>Avoid 172.17–172.31</b> if anything on the network runs Docker, WSL2 or Hyper-V.</li>
-        <li><b>192.168.x is crowded.</b> Anything under ~<code>192.168.10</code> is a router default somewhere, plus 43, 49, 50, 56, 64–71, 86, 88, 100, 122, 137, 178.</li>
+        <li><b>IPv4 LAN:</b> pick a random <code>10.x.y.0/24</code>. Skip <code>10.0-10.10</code>, <code>10.42-43</code>, <code>10.64-127</code>, <code>10.88-89</code>, <code>10.96-111</code> and <code>10.244</code>.</li>
+        <li><b>Avoid 172.17-172.31</b> if anything on the network runs Docker, WSL2 or Hyper-V.</li>
+        <li><b>192.168.x is crowded.</b> Anything under ~<code>192.168.10</code> is a router default somewhere, plus 43, 49, 50, 56, 64-71, 86, 88, 100, 122, 137, 178.</li>
         <li><b>Don’t use <code>100.64.0.0/10</code></b> for a LAN. ISPs (CGNAT) and Tailscale already live there.</li>
         <li><b>IPv6:</b> use <code>fd</code> + 40 random bits for your /48. Never use <code>fc00::/8</code> or a hand-picked <code>fd00::</code>.</li>
       </ul>
@@ -186,6 +187,48 @@ h3.rsub{font-size:14px;font-weight:600;margin:18px 0 6px}
   <footer><b>Risk levels</b><ul class="rules"><li><b>Never use</b>: reserved/special, will break things.</li><li><b>Very common</b>: a fixed default on popular gear.</li><li><b>Common</b>/<b>Occasional</b>: defaults on less common tools.</li><li><i>varies</i>: the tool picks a random block inside that range.</li></ul>Click any range to copy it. Defaults change between firmware versions, so check your own gear.</footer>
   </div>
 
+  <div class="panel" id="tab-v6" role="tabpanel" hidden>
+  <p class="lede">Common IPv6 prefixes: which ones you can use at home, what smart home gear (Matter, Thread) uses, and how NAT works, or doesn’t, in IPv6.</p>
+
+  <div class="card">
+    <h2>What is this address?</h2>
+    <input type="text" id="q6" placeholder="e.g. fe80::1, fd12:3456:789a::/48, 2001:db8::/32, or search 'thread'" autocomplete="off" spellcheck="false">
+    <div class="row-btns">
+      <button id="ula6">Generate my ULA /48</button>
+      <button id="clear6">Clear</button>
+    </div>
+    <div class="verdict" id="verdict6"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2>At home</h2>
+      <ul class="rules">
+        <li><b>Public prefix:</b> your ISP delegates one, usually a <code>/56</code> in Australia (sometimes <code>/48</code>, mobile often a single <code>/64</code>).</li>
+        <li><b>One <code>/64</code> per LAN or VLAN.</b> Never go smaller: SLAAC, Android and Thread all need a /64.</li>
+        <li><b>Add a ULA <code>/48</code></b> (<code>fd</code> + 40 random bits) for stable internal addresses. It survives ISP prefix changes.</li>
+        <li><b>No NAT needed.</b> The router firewall blocks inbound by default. That’s what keeps it private.</li>
+        <li><b>Link-local <code>fe80::</code></b> is always there, but only works on one link.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Smart home, IoT and NAT</h2>
+      <ul class="rules">
+        <li><b>Matter and Thread are IPv6 only.</b> Leave IPv6 on, even without ISP IPv6. ULA and link-local work locally.</li>
+        <li><b>Thread border routers</b> (HomePod, Apple TV, Nest Hub, Home Assistant) create their own random ULA /64s.</li>
+        <li><b>Keep phones and border routers on the same VLAN</b>, or add an mDNS reflector and routing. Otherwise Matter devices show “not responding”.</li>
+        <li><b>IoT VLAN:</b> give it its own /64 from your /56 (and ULA /48).</li>
+        <li><b>NAT:</b> avoid NAT66 masquerade. NPTv6 (1:1 prefix swap) is fine for multi-WAN. NAT64 (<code>64:ff9b::/96</code>) lets IPv6-only devices reach IPv4 sites.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="filters" id="filters6"></div>
+  <div id="list6"></div>
+
+  <footer><ul class="rules"><li><b>Use at home</b>: safe for your own network. <b>Automatic</b>: devices set these up themselves.</li><li><b>Avoid</b>: used by a tool or picked by many, so it may collide.</li><li><i>varies</i>: the device picks a random block inside that range.</li><li>Click any prefix to copy it. Sources: <a href="https://www.iana.org/assignments/iana-ipv6-special-registry/">IANA IPv6 special-purpose registry</a>, <a href="https://www.iana.org/assignments/ipv6-multicast-addresses/">IANA IPv6 multicast registry</a>.</li></ul></footer>
+  </div>
+
   <div class="panel" id="tab-wifi" role="tabpanel" hidden>
   <p class="lede">The most power (EIRP) an 802.11 device may radiate in Australia, by band and channel, under the ACMA LIPD class licence. EIRP counts antenna gain, so a higher-gain antenna means turning the radio down.</p>
 
@@ -206,23 +249,23 @@ h3.rsub{font-size:14px;font-weight:600;margin:18px 0 6px}
   <div class="card">
     <h2>Weather radars near major cities</h2>
     <ul class="rules hint">
-      <li>Only C-band radars (5600–5650 MHz, channels 120–128) affect 5 GHz Wi-Fi. S-band radars don’t.</li>
-      <li>Channels 116–128 are already banned for Wi-Fi in Australia.</li>
+      <li>Only C-band radars (5600-5650 MHz, channels 120-128) affect 5 GHz Wi-Fi. S-band radars don’t.</li>
+      <li>Channels 116-128 are already banned for Wi-Fi in Australia.</li>
       <li>Within ~35 km of a C-band site (further with line of sight), skip the Avoid channels. DFS can drop your AP off them without warning.</li>
-      <li>Safest near a radar: 36–48 or 149–165 (no DFS).</li>
+      <li>Safest near a radar: 36-48 or 149-165 (no DFS).</li>
       <li>Same channels for every site, as the Bureau doesn’t publish per-site frequencies. 35 km is the US radius for airport weather radars.</li>
     </ul>
     <h3 class="rsub">C-band: affects 5 GHz Wi-Fi</h3>
     <div class="tscroll"><table class="lim">
       <tr><th>City</th><th>Radar site</th><th>Area</th><th>Avoid</th><th>Radius</th></tr>
-      <tr><td>Melbourne</td><td>Broadmeadows</td><td>Northern suburbs, VIC</td><td><span class="mono">100–112, 132–144</span><div class="sub">also 52–64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
-      <tr><td>Adelaide</td><td>Sellicks Hill</td><td>Southern Fleurieu, SA</td><td><span class="mono">100–112, 132–144</span><div class="sub">also 52–64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
-      <tr><td>Perth</td><td>Perth Airport</td><td>Eastern suburbs, WA</td><td><span class="mono">100–112, 132–144</span><div class="sub">also 52–64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
-      <tr><td>Hobart</td><td>Mt Koonya</td><td>Tasman Peninsula, TAS</td><td><span class="mono">100–112, 132–144</span><div class="sub">also 52–64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
-      <tr><td>Hobart</td><td>Hobart Airport</td><td>Cambridge, eastern shore, TAS</td><td><span class="mono">100–112, 132–144</span><div class="sub">also 52–64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
-      <tr><td>Darwin</td><td>Berrimah</td><td>Eastern suburbs, NT</td><td><span class="mono">100–112, 132–144</span><div class="sub">also 52–64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
-      <tr><td>Darwin</td><td>Darwin Airport</td><td>Marrara, NT</td><td><span class="mono">100–112, 132–144</span><div class="sub">also 52–64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
-      <tr><td>Cairns</td><td>Saddle Mountain</td><td>Northwest of Cairns, QLD</td><td><span class="mono">100–112, 132–144</span><div class="sub">also 52–64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
+      <tr><td>Melbourne</td><td>Broadmeadows</td><td>Northern suburbs, VIC</td><td><span class="mono">100-112, 132-144</span><div class="sub">also 52-64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
+      <tr><td>Adelaide</td><td>Sellicks Hill</td><td>Southern Fleurieu, SA</td><td><span class="mono">100-112, 132-144</span><div class="sub">also 52-64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
+      <tr><td>Perth</td><td>Perth Airport</td><td>Eastern suburbs, WA</td><td><span class="mono">100-112, 132-144</span><div class="sub">also 52-64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
+      <tr><td>Hobart</td><td>Mt Koonya</td><td>Tasman Peninsula, TAS</td><td><span class="mono">100-112, 132-144</span><div class="sub">also 52-64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
+      <tr><td>Hobart</td><td>Hobart Airport</td><td>Cambridge, eastern shore, TAS</td><td><span class="mono">100-112, 132-144</span><div class="sub">also 52-64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
+      <tr><td>Darwin</td><td>Berrimah</td><td>Eastern suburbs, NT</td><td><span class="mono">100-112, 132-144</span><div class="sub">also 52-64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
+      <tr><td>Darwin</td><td>Darwin Airport</td><td>Marrara, NT</td><td><span class="mono">100-112, 132-144</span><div class="sub">also 52-64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
+      <tr><td>Cairns</td><td>Saddle Mountain</td><td>Northwest of Cairns, QLD</td><td><span class="mono">100-112, 132-144</span><div class="sub">also 52-64 if DFS drops persist</div></td><td>35 km<div class="sub">further with line of sight</div></td></tr>
     </table></div>
     <h3 class="rsub">S-band: doesn’t affect Wi-Fi</h3>
     <div class="tscroll"><table class="lim">
@@ -238,7 +281,7 @@ h3.rsub{font-size:14px;font-weight:600;margin:18px 0 6px}
       <tr><td>Perth</td><td>Serpentine</td><td>Southeast fringe, WA</td></tr>
       <tr><td>Townsville</td><td>Hervey Range</td><td>West of Townsville, QLD</td></tr>
     </table></div>
-    <p class="hint">Sources: <a href="https://en.wikipedia.org/wiki/Australia%27s_weather_radars">Australia’s weather radars</a> (site list and band) and the Bureau of Meteorology’s <a href="https://www.acma.gov.au/sites/default/files/2022-12/RadComms%202022%20-%20Session%209%20-%20The%20Bureau.pdf">RadComms 2022 talk</a> (5600–5650 MHz). Each radar covers about 200–250 km.</p>
+    <p class="hint">Sources: <a href="https://en.wikipedia.org/wiki/Australia%27s_weather_radars">Australia’s weather radars</a> (site list and band) and the Bureau of Meteorology’s <a href="https://www.acma.gov.au/sites/default/files/2022-12/RadComms%202022%20-%20Session%209%20-%20The%20Bureau.pdf">RadComms 2022 talk</a> (5600-5650 MHz). Each radar covers about 200-250 km.</p>
   </div>
 
   <div class="grid2">
@@ -276,18 +319,18 @@ const E=(cat,r,risk,name,note='',v=false)=>D.push({cat,r,risk,name,note,v});
 
 // ---- Reserved / special / ISP
 E('std','10.0.0.0/8','info','RFC 1918 private','16.7M addresses. Heavily carved up by Docker Swarm, Kubernetes, VPNs and clouds (see below).');
-E('std','172.16.0.0/12','info','RFC 1918 private','172.16.0.0 – 172.31.255.255. Docker, WSL2 and Hyper-V take /16s and /20s from here.');
+E('std','172.16.0.0/12','info','RFC 1918 private','172.16.0.0 - 172.31.255.255. Docker, WSL2 and Hyper-V take /16s and /20s from here.');
 E('std','192.168.0.0/16','info','RFC 1918 private','The most collision-prone block. Almost every consumer router, hotspot and VM tool defaults somewhere in here.');
-E('std','100.64.0.0/10','high','Shared Address Space / CGNAT (RFC 6598)','100.64.0.0 – 100.127.255.255. ISPs use it between your router and their carrier-grade NAT (Starlink, most 4G/5G, many NBN providers). Tailscale, NetBird and Cloudflare Zero Trust use it too.');
+E('std','100.64.0.0/10','high','Shared Address Space / CGNAT (RFC 6598)','100.64.0.0 - 100.127.255.255. ISPs use it between your router and their carrier-grade NAT (Starlink, most 4G/5G, many NBN providers). Tailscale, NetBird and Cloudflare Zero Trust use it too.');
 E('std','0.0.0.0/8','reserved','“This network”','0.0.0.0 means “any/unspecified”. Not routable.');
 E('std','127.0.0.0/8','reserved','Loopback','The whole /8 is loopback, not only 127.0.0.1.');
 E('std','169.254.0.0/16','reserved','Link-local / APIPA','Self-assigned when DHCP fails. Cloud metadata lives at 169.254.169.254.');
 E('std','192.0.0.0/24','reserved','IETF protocol assignments','Includes DS-Lite and 464XLAT addresses (below).');
-E('std','192.0.0.0/29','med','464XLAT CLAT / DS-Lite','iPhones and Androids on IPv6-only mobile networks (e.g. T-Mobile US) show 192.0.0.2–.4 as their IPv4.');
+E('std','192.0.0.0/29','med','464XLAT CLAT / DS-Lite','iPhones and Androids on IPv6-only mobile networks (e.g. T-Mobile US) show 192.0.0.2-.4 as their IPv4.');
 E('std','192.0.2.0/24','reserved','TEST-NET-1 (documentation)','For examples in docs only.');
 E('std','198.51.100.0/24','reserved','TEST-NET-2 (documentation)');
 E('std','203.0.113.0/24','reserved','TEST-NET-3 (documentation)');
-E('std','198.18.0.0/15','reserved','Benchmarking (RFC 2544)','198.18.0.0 – 198.19.255.255. Also the default “fake-IP” pool for Clash, Surge, sing-box, Stash and similar proxy apps.');
+E('std','198.18.0.0/15','reserved','Benchmarking (RFC 2544)','198.18.0.0 - 198.19.255.255. Also the default “fake-IP” pool for Clash, Surge, sing-box, Stash and similar proxy apps.');
 E('std','192.88.99.0/24','reserved','Deprecated 6to4 relay anycast');
 E('std','224.0.0.0/4','reserved','Multicast','224.0.0.251 = mDNS, 239.255.255.250 = SSDP/UPnP.');
 E('std','240.0.0.0/4','reserved','Reserved (former Class E)','Unroutable on most OSes and hardware. Includes 255.255.255.255 broadcast.');
@@ -313,7 +356,7 @@ E('std','ff00::/8','reserved','Multicast','ff02::1 = all nodes, ff02::2 = all ro
 E('std','200::/7','low','Yggdrasil mesh','0200::/7 is reserved global space that Yggdrasil uses anyway.');
 
 // ---- Hotspots
-E('hotspot','172.20.10.0/28','high','iPhone / iPad Personal Hotspot','Phone is 172.20.10.1; clients get .2–.14. Fixed and can’t be changed.');
+E('hotspot','172.20.10.0/28','high','iPhone / iPad Personal Hotspot','Phone is 172.20.10.1; clients get .2-.14. Fixed and can’t be changed.');
 E('hotspot','192.168.43.0/24','high','Android hotspot (Android ≤ 10, many OEM builds)','Phone is 192.168.43.1.');
 E('hotspot','192.168.0.0/16','med','Android 11+ hotspot (randomised)','Picks a random /24 each time it starts, avoiding the upstream network.',true);
 E('hotspot','192.168.42.0/24','med','Android USB tethering (legacy)');
@@ -326,7 +369,7 @@ E('hotspot','192.168.8.0/24','med','Huawei pocket Wi-Fi / 4G routers, GL.iNet tr
 // ---- Routers
 E('router','192.168.1.0/24','high','Linksys, Netgear, newer TP-Link Archer, older ASUS, OpenWrt, pfSense, OPNsense, UniFi, Verizon Fios, Starlink router','Gateway 192.168.1.1 (AT&T gateways use 192.168.1.254). Probably the most common LAN in the world.');
 E('router','192.168.0.0/24','high','TP-Link, D-Link, Tenda, some Netgear','Gateway 192.168.0.1.');
-E('router','192.168.68.0/22','high','TP-Link Deco mesh','192.168.68.1, spanning 192.168.68.0 – 192.168.71.255.');
+E('router','192.168.68.0/22','high','TP-Link Deco mesh','192.168.68.1, spanning 192.168.68.0 - 192.168.71.255.');
 E('router','10.0.0.0/24','high','Comcast Xfinity and other ISP gateways','Gateway 10.0.0.1. It’s also the first thing everyone types for WireGuard and lab networks.');
 E('router','192.168.50.0/24','med','ASUS (current firmware)','Gateway 192.168.50.1.');
 E('router','192.168.86.0/24','med','Google Wifi / Nest Wifi','Gateway 192.168.86.1.');
@@ -341,7 +384,7 @@ E('router','10.0.1.0/24','low','Apple AirPort (discontinued)','Gateway 10.0.1.1.
 // ---- Containers
 E('container','172.17.0.0/16','high','Docker default bridge (docker0)','Containers get 172.17.0.x; host is 172.17.0.1.');
 E('container','172.18.0.0-172.31.255.255','high','Docker Compose / user-defined networks','The default pool hands out one /16 per network, in order: 172.18, 172.19, 172.20… Any LAN in 172.16/12 eventually collides.');
-E('container','192.168.0.0/16','med','Docker pool overflow','Once 172.17–31 are used up, Docker allocates /20s from 192.168.0.0/16.',true);
+E('container','192.168.0.0/16','med','Docker pool overflow','Once 172.17-31 are used up, Docker allocates /20s from 192.168.0.0/16.',true);
 E('container','10.0.0.0/8','med','Docker Swarm overlay pool','Overlay networks get /24s from 10.0.0.0/8; the ingress network is 10.0.0.0/24.',true);
 E('container','192.168.65.0/24','med','Docker Desktop VM network','host.docker.internal → 192.168.65.254.');
 E('container','192.168.138.0/23','med','OrbStack machines','Default network.subnet4. Change it with: orb config set network.subnet4 …');
@@ -351,7 +394,7 @@ E('container','10.88.0.0/16','med','Podman default network');
 E('container','10.89.0.0/16','med','Podman user-defined networks','/24s handed out from here (netavark).');
 E('container','192.168.127.0/24','low','Podman machine (gvproxy)');
 E('container','192.168.5.0/24','low','Lima / Colima user-mode network','Host reachable at 192.168.5.2.');
-E('container','10.96.0.0/12','high','Kubernetes service CIDR (kubeadm default)','10.96.0.0 – 10.111.255.255. kube-dns is usually 10.96.0.10.');
+E('container','10.96.0.0/12','high','Kubernetes service CIDR (kubeadm default)','10.96.0.0 - 10.111.255.255. kube-dns is usually 10.96.0.10.');
 E('container','10.244.0.0/16','high','Kubernetes pods: Flannel, kind');
 E('container','192.168.0.0/16','high','Kubernetes pods: Calico default','The whole /16, so it overlaps nearly every home LAN. Change --pod-network-cidr when you use Calico.');
 E('container','10.42.0.0/16','med','k3s / RKE2 pods');
@@ -382,7 +425,7 @@ E('vpn','172.16.0.2/32','low','Cloudflare WARP (1.1.1.1 app) tunnel address');
 E('vpn','10.8.0.0/24','high','OpenVPN default, wg-easy, PiVPN (OpenVPN)');
 E('vpn','10.6.0.0/24','med','PiVPN (WireGuard)');
 E('vpn','10.0.0.0/24','high','WireGuard tutorials','Nearly every WireGuard guide uses 10.0.0.1/24, and Xfinity uses the same block.');
-E('vpn','10.64.0.0/10','med','Mullvad VPN','WireGuard tunnel IPs in 10.64–10.127; DNS 10.64.0.1.');
+E('vpn','10.64.0.0/10','med','Mullvad VPN','WireGuard tunnel IPs in 10.64-10.127; DNS 10.64.0.1.');
 E('vpn','fc00:bbbb:bbbb:bb01::/64','low','Mullvad VPN IPv6');
 E('vpn','10.2.0.0/24','med','Proton VPN (WireGuard)','Client 10.2.0.2, DNS 10.2.0.1.');
 E('vpn','10.5.0.0/24','med','NordVPN (NordLynx)','Client 10.5.0.2.');
@@ -400,7 +443,7 @@ E('cloud','fd00:ec2::254/128','reserved','AWS instance metadata (IPv6)');
 E('cloud','168.63.129.16/32','reserved','Azure platform (DNS, health probes)','A public address with special meaning inside Azure.');
 
 // ---- Printers & devices
-E('device','192.168.118.100-192.168.118.200','low','Brother printers','DHCP-style block for Brother printers, 192.168.118.100 – 192.168.118.200.');
+E('device','192.168.118.100-192.168.118.200','low','Brother printers','DHCP-style block for Brother printers, 192.168.118.100 - 192.168.118.200.');
 E('device','192.168.118.0/24','low','Brother Wi-Fi Direct','Printer is 192.168.118.1 and your device joins its Wi-Fi.');
 E('device','192.168.223.0/24','med','HP Wireless Direct, Epson Wi-Fi Direct / Simple AP','Printer is 192.168.223.1 and your device joins its Wi-Fi.');
 E('device','192.0.0.192/32','low','HP JetDirect fallback (older HP printers)','Used when no DHCP/BOOTP answers. Newer printers fall back to 169.254.x.x instead.');
@@ -460,8 +503,8 @@ function chips(){filters.innerHTML='';
   Object.entries(CATS).forEach(([k,l])=>add(l,cat===k,()=>{cat=k;chips();render()}));}
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function spanTxt(e){const R=e.R;if(R.lo===R.hi)return '';
-  if(R.v===4){const c=R.hi-R.lo+1n;return `${f4(R.lo)} – ${f4(R.hi)} · ${c.toLocaleString()} addresses`}
-  return `${f6(R.lo)} – ${f6(R.hi)}`}
+  if(R.v===4){const c=R.hi-R.lo+1n;return `${f4(R.lo)} - ${f4(R.hi)} · ${c.toLocaleString()} addresses`}
+  return `${f6(R.lo)} - ${f6(R.hi)}`}
 function rel(q,e){if(inside(q,e.R))return q.lo===e.R.lo&&q.hi===e.R.hi?'exact':'inside';if(inside(e.R,q))return 'contains';return 'partial'}
 const list=document.getElementById('list'),qEl=document.getElementById('q'),vEl=document.getElementById('verdict');
 function render(){
@@ -487,12 +530,12 @@ function render(){
 function verdict(Q,raw){
   if(!raw){vEl.style.display='none';return}
   vEl.style.display='block';
-  if(!Q){vEl.className='verdict v-i';vEl.innerHTML='<b>Text search</b><span>Enter an IP, CIDR (10.1.2.0/24) or range (a–b) to check for conflicts.</span>';return}
+  if(!Q){vEl.className='verdict v-i';vEl.innerHTML='<b>Text search</b><span>Enter an IP, CIDR (10.1.2.0/24) or range (a-b) to check for conflicts.</span>';return}
   const m=D.filter(e=>e.risk!=='info'&&ov(Q,e.R));
   const fixed=m.filter(e=>!e.v),vary=m.filter(e=>e.v);
   const has=r=>fixed.some(e=>e.risk===r);
   const names=a=>[...new Set(a.map(e=>e.name))].slice(0,4).join(' · ')+(new Set(a.map(e=>e.name)).size>4?' …':'');
-  const size=Q.v===4?`${f4(Q.lo)} – ${f4(Q.hi)}`:`${f6(Q.lo)} – ${f6(Q.hi)}`;
+  const size=Q.v===4?`${f4(Q.lo)} - ${f4(Q.hi)}`:`${f6(Q.lo)} - ${f6(Q.hi)}`;
   const priv=['10.0.0.0/8','172.16.0.0/12','192.168.0.0/16','fc00::/7'].some(p=>inside(Q,pr(p)));
   let cls,head,body;
   if(has('reserved')){cls='v-r';head='Reserved: don’t use this';body=names(fixed.filter(e=>e.risk==='reserved'))}
@@ -518,18 +561,119 @@ document.getElementById('ula').onclick=()=>{
   const b=new Uint8Array(5);crypto.getRandomValues(b);const h=[...b].map(x=>x.toString(16).padStart(2,'0'));
   setQ(`fd${h[0]}:${h[1]}${h[2]}:${h[3]}${h[4]}::/48`)};
 const toast=document.getElementById('toast');
-list.addEventListener('click',ev=>{const t=ev.target.closest('[data-copy]');if(!t)return;
-  try{navigator.clipboard.writeText(t.dataset.copy);toast.textContent='Copied '+t.dataset.copy}catch(e){toast.textContent=t.dataset.copy}
-  toast.style.opacity=1;clearTimeout(toast._t);toast._t=setTimeout(()=>toast.style.opacity=0,1200)});
+function copy(v){try{navigator.clipboard.writeText(v);toast.textContent='Copied '+v}catch(e){toast.textContent=v}
+  toast.style.opacity=1;clearTimeout(toast._t);toast._t=setTimeout(()=>toast.style.opacity=0,1200)}
+list.addEventListener('click',ev=>{const t=ev.target.closest('[data-copy]');if(t)copy(t.dataset.copy)});
 document.getElementById('theme').onclick=()=>{const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('theme',r.dataset.theme)}catch(e){}};
 try{const t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
 chips();render();
 
 // ---------- tabs ----------
-function showTab(){const t=location.hash==='#wifi'?'wifi':'ip';
+const TABS=['ip','v6','wifi'];
+function showTab(){const h=location.hash.slice(1),t=TABS.includes(h)?h:'ip';
   document.querySelectorAll('.tabs a').forEach(a=>a.setAttribute('aria-selected',a.dataset.tab===t));
-  document.getElementById('tab-ip').hidden=t!=='ip';document.getElementById('tab-wifi').hidden=t!=='wifi'}
+  TABS.forEach(k=>document.getElementById('tab-'+k).hidden=t!==k)}
 addEventListener('hashchange',showTab);showTab();
+
+// ---------- IPv6 tab ----------
+const G6={home:'Home & private',iot:'Smart home & IoT',nat:'NAT & IPv4 transition',mc:'Multicast',vpn:'VPNs & containers',rsv:'Reserved & special'};
+const U6={home:['Use at home','ok'],info:['Private block','info'],auto:['Automatic','info'],pub:['Public','info'],iot:['Smart home','low'],nat:['NAT','med'],avoid:['Avoid','high'],never:['Never use','reserved']};
+const V6=[];
+const S=(g,r,u,name,note='',v=false)=>V6.push({g,r,u,name,note,v,R:pr(r)});
+S('home','2000::/3','pub','Global unicast (GUA)','All public IPv6. Your ISP delegates a slice (/56, /48 or /64). Reachable from the internet unless the firewall blocks it, which home routers do by default.');
+S('home','fd00::/8','home','ULA, random /48','The IPv6 192.168.x. fd + 40 random bits = your /48, enough for 65,536 /64 subnets. Not routed on the internet.');
+S('home','fe80::/10','auto','Link-local','Every interface makes one (fe80::/64 in practice). Only works on that link. Needs a zone ID, e.g. fe80::1%en0.');
+S('home','fc00::/7','info','Unique local (ULA) block','Covers fc00::/8 and fd00::/8. The private range of IPv6.');
+S('home','fd00::/48','avoid','Lazy ULA (fd00::)','Hand-picked by many, and FRITZ!Box uses fd00::/64 by default. Collides when networks join over VPN.');
+S('home','fc00::/8','avoid','ULA “fc” half','Never defined. Some VPNs use it (see below). Use fd instead.');
+S('home','fec0::/10','never','Site-local (deprecated)','Replaced by ULA in 2004. Old Windows used fec0:0:0:ffff::1-3 for DNS.');
+
+S('iot','fe80::/10','iot','Matter commissioning','New Matter devices are found over mDNS and set up with link-local addresses, so no router config is needed.');
+S('iot','fd00::/8','iot','Thread mesh-local prefix','Each Thread network picks a random fdxx::/64 used only inside the mesh.',true);
+S('iot','fd00::/8','iot','Thread off-mesh (OMR) prefix','Border routers advertise a random ULA /64 so phones on Wi-Fi can reach Thread devices. Uses your ISP prefix instead if the router delegates one.',true);
+S('iot','fd00::/8','iot','Thread NAT64 prefix','Border routers can run NAT64 from their own ULA /96 so Thread devices can reach IPv4 clouds.',true);
+S('iot','ff02::fb/128','iot','mDNS','HomeKit, Matter, AirPlay, Chromecast and printers find each other here. Blocking it breaks discovery.');
+S('iot','ff02::c/128','iot','SSDP / UPnP','Smart TVs, media servers and some cameras announce themselves here.');
+S('iot','ff03::1/128','iot','Thread realm-local all nodes','Every device in a Thread mesh. ff03::2 = all Thread routers, ff03::fc = all MPL forwarders.');
+
+S('nat','64:ff9b::/96','nat','NAT64 well-known prefix','IPv6-only clients reach IPv4 sites through it, with DNS64. 64:ff9b::808:808 = 8.8.8.8. Used by IPv6-only mobile networks.');
+S('nat','64:ff9b:1::/48','nat','Local-use NAT64','For your own NAT64 gateway (Jool, Tayga, pfSense, OPNsense).');
+S('nat','::ffff:0:0/96','auto','IPv4-mapped','How dual-stack sockets show IPv4 clients, e.g. ::ffff:192.168.1.10. Never seen on the wire.');
+S('nat','2002::/16','never','6to4 (deprecated)','Old tunnel that embedded your IPv4 address. Turn it off.');
+S('nat','2001::/32','never','Teredo (deprecated)','Old Windows/Xbox tunnel through IPv4 NAT. Mostly retired.');
+S('nat','::/96','never','IPv4-compatible (deprecated)');
+
+S('mc','ff00::/8','auto','Multicast','IPv6 has no broadcast. Everything uses multicast instead.');
+S('mc','ff02::1/128','auto','All nodes on the link','Replaces IPv4 broadcast.');
+S('mc','ff02::2/128','auto','All routers','Devices ask here for router advertisements (RAs).');
+S('mc','ff02::1:ff00:0/104','auto','Solicited-node','Neighbour discovery, the IPv6 ARP. MLD snooping must let it through.');
+S('mc','ff02::1:2/128','auto','DHCPv6 servers and relays');
+S('mc','ff02::1:3/128','auto','LLMNR','Windows local name lookup.');
+S('mc','ff02::16/128','auto','MLDv2 reports','Devices join multicast groups here. Switches snoop it.');
+
+S('vpn','fd7a:115c:a1e0::/48','avoid','Tailscale IPv6');
+S('vpn','fc00:bbbb:bbbb:bb01::/64','avoid','Mullvad VPN IPv6');
+S('vpn','fc00::/8','avoid','ZeroTier 6PLANE / cjdns','ZeroTier: fc + network ID. Its RFC 4193 mode uses fd + network ID.',true);
+S('vpn','fd07:b51a:cc66::/48','avoid','OrbStack IPv6');
+S('vpn','fd00::/8','avoid','Docker IPv6 networks','Recent Docker picks a ULA /64 when IPv6 is on and no subnet is set.',true);
+S('vpn','200::/7','avoid','Yggdrasil','Mesh network addresses in old NSAP space. Not routed on the internet.');
+
+S('rsv','::/128','never','Unspecified','Means “no address yet”. Used as a source during setup.');
+S('rsv','::1/128','never','Loopback','The IPv6 127.0.0.1.');
+S('rsv','2001:db8::/32','never','Documentation','For examples only.');
+S('rsv','3fff::/20','never','Documentation (2024)','Bigger example block (RFC 9637).');
+S('rsv','100::/64','never','Discard-only','Used to blackhole traffic.');
+S('rsv','2001:2::/48','never','Benchmarking');
+S('rsv','2001:20::/28','never','ORCHIDv2','Crypto hash identifiers. Not routable.');
+S('rsv','5f00::/16','never','SRv6 SIDs','Segment routing in ISP networks (RFC 9602).');
+
+let g6='all';
+const f6El=document.getElementById('filters6'),l6=document.getElementById('list6'),q6=document.getElementById('q6'),v6El=document.getElementById('verdict6');
+function chips6(){f6El.innerHTML='';
+  const add=(lab,k)=>{const b=document.createElement('button');b.textContent=lab;if(g6===k)b.className='on';b.onclick=()=>{g6=k;chips6();render6()};f6El.appendChild(b)};
+  add('All','all');Object.entries(G6).forEach(([k,l])=>add(l,k))}
+function render6(){
+  const raw=q6.value.trim(),Q=pr(raw),txt=raw.toLowerCase();
+  l6.innerHTML='';let total=0;
+  for(const[k,label]of Object.entries(G6)){
+    if(g6!=='all'&&g6!==k)continue;
+    let rows=V6.filter(e=>e.g===k);
+    if(Q&&Q.v===6)rows=rows.filter(e=>ov(Q,e.R));
+    else if(txt)rows=rows.filter(e=>(e.r+' '+e.name+' '+e.note+' '+label+' '+U6[e.u][0]).toLowerCase().includes(txt));
+    if(!rows.length)continue;total+=rows.length;
+    const sec=document.createElement('section');sec.className='cat';
+    sec.innerHTML=`<h3>${label}</h3><div class="entries">${rows.map(e=>`
+      <div class="e${Q?' hit':''}">
+        <div><div class="range" data-copy="${esc(e.r)}">${esc(e.r)}${Q&&Q.v===6?`<span class="rel">${rel(Q,e)}</span>`:''}</div>${e.R.lo!==e.R.hi?`<div class="span">${f6(e.R.lo)} - ${f6(e.R.hi)}</div>`:''}</div>
+        <div class="desc"><div class="name">${esc(e.name)}</div>${e.note?`<div class="note">${esc(e.note)}</div>`:''}${e.v?'<div class="var">varies: picks a random block inside this range</div>':''}</div>
+        <div class="badge b-${U6[e.u][1]}">${U6[e.u][0]}</div>
+      </div>`).join('')}</div>`;
+    l6.appendChild(sec)}
+  if(!total)l6.innerHTML='<div class="entries"><div class="empty">Nothing matches.</div></div>';
+  verdict6(Q,raw)}
+function verdict6(Q,raw){
+  if(!raw){v6El.style.display='none';return}
+  v6El.style.display='block';
+  if(!Q){v6El.className='verdict v-i';v6El.innerHTML='<b>Text search</b><span>Enter an IPv6 address or prefix (fd12::/48) to see what it is.</span>';return}
+  if(Q.v===4){v6El.className='verdict v-i';v6El.innerHTML='<b>That’s IPv4</b><span>Use the IP ranges tab to check it.</span>';return}
+  const m=V6.filter(e=>!e.v&&inside(Q,e.R)).sort((a,b)=>b.R.p-a.R.p);
+  const top=m[0],size=Q.lo===Q.hi?'':`<br><span class="mono" style="opacity:.8">${f6(Q.lo)} - ${f6(Q.hi)}</span>`;
+  if(!top){v6El.className='verdict v-r';v6El.innerHTML=`<b>Unassigned</b><span>Outside every known block, including public 2000::/3. Don’t use it.</span>${size}`;return}
+  const cls={ok:'v-ok',info:'v-i',low:'v-l',med:'v-m',high:'v-h',reserved:'v-r'}[U6[top.u][1]];
+  let note=top.note;
+  if(top.r==='fd00::/8'&&Q.p<48)note='Too big for one site. Pick a random /48 inside fd00::/8.';
+  else if(top.r==='fd00::/8'&&Q.p>=48){const b=f6(Q.lo).split(':').slice(0,3).join(':');note=`Looks good. Example /64s: ${b}:1::/64 for the LAN, ${b}:20::/64 for IoT.`}
+  if(Q.p>64&&Q.p<127&&top.u!=='never'&&!inside(Q,pr('ff00::/8')))note+=' Note: subnets smaller than /64 break SLAAC, Android and Thread.';
+  const also=m.slice(1).map(e=>e.name).filter((n,i,a)=>a.indexOf(n)===i&&n!==top.name);
+  v6El.className='verdict '+cls;
+  v6El.innerHTML=`<b>${esc(top.name)}: ${U6[top.u][0]}</b><span>${esc(note)}${also.length?' Part of: '+esc(also.join(', '))+'.':''}</span>${size}`}
+q6.addEventListener('input',render6);
+document.getElementById('clear6').onclick=()=>{q6.value='';render6()};
+document.getElementById('ula6').onclick=()=>{
+  const b=new Uint8Array(5);crypto.getRandomValues(b);const h=[...b].map(x=>x.toString(16).padStart(2,'0'));
+  q6.value=`fd${h[0]}:${h[1]}${h[2]}:${h[3]}${h[4]}::/48`;render6()};
+l6.addEventListener('click',ev=>{const t=ev.target.closest('[data-copy]');if(t)copy(t.dataset.copy)});
+chips6();render6();
 
 // ---------- Wi-Fi power limits (Australia) ----------
 // mW limits. ni/no = indoor/outdoor without TPC (DFS bands only). out 0 = not permitted outdoors.
@@ -557,11 +701,11 @@ function rule(band,c,w){
 const ch=(base,list,w)=>list.map(n=>({n,w,c:base+5*n}));
 const rng=(a,b,s)=>{const r=[];for(let i=a;i<=b;i+=s)r.push(i);return r};
 const WB={
-  '2.4':{lab:'2.4 GHz',lo:2400,hi:2484,tick:20,subs:[['b24',2400,2483.5,'ISM 2400–2483.5 MHz']],
+  '2.4':{lab:'2.4 GHz',lo:2400,hi:2484,tick:20,subs:[['b24',2400,2483.5,'ISM 2400-2483.5 MHz']],
     rows:[[20,ch(2407,[1,6,11],20),'1·6·11 best'],[20,ch(2407,[1,5,9,13],20),'1·5·9·13 more'],[40,[{n:'',w:40,c:2442,span:[2402,2482]}]],[80,[{n:'',w:80,c:2442,span:[2402,2482]}]],[160,[{n:'',w:160,c:2442,span:[2402,2482]}]]]},
   '5':{lab:'5 GHz',lo:5150,hi:5900,tick:50,subs:[['u1',5150,5250,'UNII-1'],['u2a',5250,5350,'UNII-2a'],['u2c',5470,5730,'UNII-2c'],['u3',5730,5850,'UNII-3']],
     rows:[[20,ch(5000,[...rng(36,64,4),...rng(100,144,4),...rng(149,165,4)],20)],[40,ch(5000,[38,46,54,62,102,110,118,126,134,142,151,159],40)],[80,ch(5000,[42,58,106,122,138,155],80)],[160,ch(5000,[50,114,163],160)]]},
-  '6':{lab:'6 GHz',lo:5925,hi:6425,tick:50,subs:[['u5',5925,6425,'UNII-5 (5925–6425 MHz)']],
+  '6':{lab:'6 GHz',lo:5925,hi:6425,tick:50,subs:[['u5',5925,6425,'UNII-5 (5925-6425 MHz)']],
     rows:[[20,ch(5950,rng(1,93,4),20)],[40,ch(5950,rng(3,91,8),40)],[80,ch(5950,rng(7,87,16),80)],[160,ch(5950,[15,47,79],160)],[320,ch(5950,[31],320),'320-1'],[320,ch(5950,[63],320),'320-2']]}};
 function lims(r){if(r.np)return r.np;
   const one=(a,b)=>a===0?'not permitted':r.dfs&&b!==a?`${pw(a)} (${Math.round(dbm(a))} dBm) with TPC, ${pw(b)} (${Math.round(dbm(b))} dBm) without`:`${pw(a)} (${Math.round(dbm(a))} dBm)`;
@@ -579,7 +723,7 @@ function wdraw(){const B=WB[wband],pos=f=>((f-B.lo)/(B.hi-B.lo)*100)+'%',wid=(a,
   wchart.innerHTML=h+'</div>';wdet.textContent='Hover or tap a channel to see its limits.'}
 function wshow(el){const[bd,n,w,c,a,b]=el.dataset.k.split('|');const r=rule(bd,+c,+w);
   wchart.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');
-  const head=n?`Channel ${n} · ${w} MHz · ${(a/1000).toFixed(3)}–${(b/1000).toFixed(3)} GHz`:`${w} MHz channels`;
+  const head=n?`Channel ${n} · ${w} MHz · ${(a/1000).toFixed(3)}-${(b/1000).toFixed(3)} GHz`:`${w} MHz channels`;
   wdet.innerHTML=`<b>${head}</b>${r.band?' · '+r.band:''}${r.sec?' · licence s. '+r.sec:''}<br>${lims(r)}`}
 wchart.addEventListener('mouseover',e=>{const b=e.target.closest('.blk');if(b)wshow(b)});
 wchart.addEventListener('click',e=>{const b=e.target.closest('.blk');if(b)wshow(b)});
@@ -587,16 +731,16 @@ const wbands=document.getElementById('wbands');
 function wbtns(){wbands.innerHTML='';for(const k of ['2.4','5','6']){const b=document.createElement('button');b.textContent=WB[k].lab;if(k===wband)b.className='on';b.onclick=()=>{wband=k;wbtns();wdraw()};wbands.appendChild(b)}}
 wbtns();wdraw();
 // summary table
-(function(){const dfsCell=r=>r.dfs?'<span class="badge b-med">DFS · TPC</span>':'—';
+(function(){const dfsCell=r=>r.dfs?'<span class="badge b-med">DFS · TPC</span>':'-';
   const lim=(a,b,dfs)=>a===0?'<span class="badge b-reserved">Not permitted</span>':dfs?`<div class="pw">${pwd(a)}</div><div class="sub">with TPC · ${pw(b)} (${Math.round(dbm(b))} dBm) without</div>`:`<div class="pw">${pwd(a)}</div>`;
   const rows=[
-    ['2.4 GHz','ISM-B','1–13','1, 6, 11 recommended, especially when crowded (most networks and US guides use it). 1, 5, 9, 13 only if neighbours do too','20 MHz','40 MHz permitted but discouraged',WR.b24],
-    ['5 GHz','UNII-1','36–48','5150–5250 MHz','20–160 MHz','',WR.u1],
-    ['5 GHz','UNII-2a','52–64','5250–5350 MHz','20–160 MHz','',WR.u2a],
-    ['5 GHz','UNII-2c','100–112, 132–144','5470–5570, 5650–5730 MHz','20–80 MHz','160 MHz not permitted',WR.u2c],
-    ['5 GHz','UNII-2c','116–128','5570–5650 MHz','—','',WR.wr],
-    ['5 GHz','UNII-3','149–165','5725–5850 MHz','20–80 MHz','160 MHz not permitted',WR.u3],
-    ['6 GHz','UNII-5','1–93','5925–6425 MHz','20–320 MHz','320 MHz: channel 31 or 63',WR.u5]];
+    ['2.4 GHz','ISM-B','1-13','1, 6, 11 recommended, especially when crowded (most networks and US guides use it). 1, 5, 9, 13 only if neighbours do too','20 MHz','40 MHz permitted but discouraged',WR.b24],
+    ['5 GHz','UNII-1','36-48','5150-5250 MHz','20-160 MHz','',WR.u1],
+    ['5 GHz','UNII-2a','52-64','5250-5350 MHz','20-160 MHz','',WR.u2a],
+    ['5 GHz','UNII-2c','100-112, 132-144','5470-5570, 5650-5730 MHz','20-80 MHz','160 MHz not permitted',WR.u2c],
+    ['5 GHz','UNII-2c','116-128','5570-5650 MHz','-','',WR.wr],
+    ['5 GHz','UNII-3','149-165','5725-5850 MHz','20-80 MHz','160 MHz not permitted',WR.u3],
+    ['6 GHz','UNII-5','1-93','5925-6425 MHz','20-320 MHz','320 MHz: channel 31 or 63',WR.u5]];
   document.getElementById('wtable').innerHTML='<tr><th>Band</th><th>Channels</th><th>Widths</th><th>Indoor EIRP</th><th>Outdoor EIRP</th><th>Needs</th><th>Licence s.</th></tr>'+
     rows.map(([b,s,c,cs,w,ws,r])=>`<tr><td><b>${b}</b><div class="sub">${s}</div></td><td><span class="mono">${c}</span><div class="sub">${cs}</div></td><td>${w}${ws?`<div class="sub">${ws}</div>`:''}</td>`+
       (r.np?`<td colspan="3"><span class="badge b-reserved">Not permitted</span><div class="sub">Reserved for weather radar</div></td>`:`<td>${lim(r.i,r.ni,r.dfs)}</td><td>${lim(r.o,r.no,r.dfs)}</td><td>${dfsCell(r)}</td>`)+
@@ -607,10 +751,10 @@ const r2=x=>String(Math.round(x*100)/100);
 mwEl.addEventListener('input',()=>{const v=parseFloat(mwEl.value);dbmEl.value=v>0?r2(dbm(v)):''});
 dbmEl.addEventListener('input',()=>{const v=parseFloat(dbmEl.value);mwEl.value=isFinite(v)?r2(mwOf(v)):''});
 // EIRP check
-const WL=[['2.4 GHz (all channels)',4000],['5 GHz UNII-1 (36–48), indoor',200],['5 GHz UNII-1 (36–48), outdoor',1000],
-  ['5 GHz UNII-2a (52–64), indoor, with TPC',200],['5 GHz UNII-2a (52–64), indoor, no TPC',100],
-  ['5 GHz UNII-2c (100–112, 132–144), with TPC',1000],['5 GHz UNII-2c (100–112, 132–144), no TPC',500],
-  ['5 GHz UNII-3 (149–165)',4000],['6 GHz, indoor',250],['6 GHz, outdoor',25]];
+const WL=[['2.4 GHz (all channels)',4000],['5 GHz UNII-1 (36-48), indoor',200],['5 GHz UNII-1 (36-48), outdoor',1000],
+  ['5 GHz UNII-2a (52-64), indoor, with TPC',200],['5 GHz UNII-2a (52-64), indoor, no TPC',100],
+  ['5 GHz UNII-2c (100-112, 132-144), with TPC',1000],['5 GHz UNII-2c (100-112, 132-144), no TPC',500],
+  ['5 GHz UNII-3 (149-165)',4000],['6 GHz, indoor',250],['6 GHz, outdoor',25]];
 const wlim=document.getElementById('wlim'),wout=document.getElementById('wout');
 wlim.innerHTML=WL.map(([l,m],i)=>`<option value="${i}">${l}: ${pw(m)} (${Math.round(dbm(m))} dBm)</option>`).join('');
 function wcheck(){const[tx,g,l]=['wtx','wgain','wloss'].map(id=>parseFloat(document.getElementById(id).value));
