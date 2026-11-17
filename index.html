@@ -202,6 +202,8 @@ h3.rsub{font-size:14px;font-weight:600;margin:18px 0 6px}
 :root .filters button:hover{color:var(--ink)}
 :root .filters button.on{background:none;color:var(--ink);border-bottom-color:var(--ink);font-weight:700}
 :root .filters .sep{align-self:stretch;margin:6px 0}
+:root code{font-weight:600;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:3px;padding:0 4px;white-space:nowrap}
+:root b code{font-weight:700}
 </style>
 </head>
 <body>
@@ -235,7 +237,7 @@ h3.rsub{font-size:14px;font-weight:600;margin:18px 0 6px}
       <h2>Rules of thumb</h2>
       <ul class="rules">
         <li><b>IPv4 LAN:</b> pick a random <code>10.x.y.0/24</code>. Skip <code>10.0-10.10</code>, <code>10.42-43</code>, <code>10.64-127</code>, <code>10.88-89</code>, <code>10.96-111</code> and <code>10.244</code>.</li>
-        <li><b>Avoid 172.17-172.31</b> if anything on the network runs Docker, WSL2 or Hyper-V.</li>
+        <li><b>Avoid <code>172.17-172.31</code></b> if anything on the network runs Docker, WSL2 or Hyper-V.</li>
         <li><b>192.168.x is crowded.</b> Anything under ~<code>192.168.10</code> is a router default somewhere, plus 43, 49, 50, 56, 64-71, 86, 88, 100, 122, 137, 178.</li>
         <li><b>Don’t use <code>100.64.0.0/10</code></b> for a LAN. ISPs (CGNAT) and Tailscale already live there.</li>
         <li><b>IPv6:</b> use <code>fd</code> + 40 random bits for your /48. Never use <code>fc00::/8</code> or a hand-picked <code>fd00::</code>.</li>
@@ -578,6 +580,8 @@ function chips(){filters.innerHTML='';
   const s=document.createElement('span');s.className='sep';filters.appendChild(s);
   add('All categories',cat==='all',()=>{cat='all';chips();render()});
   Object.entries(CATS).forEach(([k,l])=>add(l,cat===k,()=>{cat=k;chips();render()}));}
+const IPRE=/(\b\d{1,3}(?:\.(?:\d{1,3}(?:-\d{1,3})?|x)){2,3}(?:\/\d{1,3})?|\b\d{1,3}\.x\b|\b[0-9a-f]{1,4}:[0-9a-f:]*:[0-9a-f:]*(?:\/\d{1,3})?|(?<![\w.])\/\d{1,3}\b)/gi;
+const ipx=s=>esc(s).replace(IPRE,'<code class="ip">$1</code>');
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function spanTxt(e){const R=e.R;if(R.lo===R.hi)return '';
   if(R.v===4){const c=R.hi-R.lo+1n;return `${f4(R.lo)} - ${f4(R.hi)} · ${c.toLocaleString()} addresses`}
@@ -598,7 +602,7 @@ function render(){
     sec.innerHTML=`<h3>${label}</h3><div class="entries">${rows.map(e=>`
       <div class="e${Q?' hit':''}">
         <div><div class="range" data-copy="${esc(e.r)}">${esc(e.r)}${Q?`<span class="rel">${rel(Q,e)}</span>`:''}</div><div class="span">${spanTxt(e)}</div></div>
-        <div class="desc"><div class="name">${esc(e.name)}</div>${e.note?`<div class="note">${esc(e.note)}</div>`:''}${e.v?'<div class="var">varies: picks a random block inside this range</div>':''}</div>
+        <div class="desc"><div class="name">${esc(e.name)}</div>${e.note?`<div class="note">${ipx(e.note)}</div>`:''}${e.v?'<div class="var">varies: picks a random block inside this range</div>':''}</div>
         <div class="badge b-${e.risk}">${RISK[e.risk]}</div>
       </div>`).join('')}</div>`;
     list.appendChild(sec)}
@@ -723,7 +727,7 @@ function render6(){
     sec.innerHTML=`<h3>${label}</h3><div class="entries">${rows.map(e=>`
       <div class="e${Q?' hit':''}">
         <div><div class="range" data-copy="${esc(e.r)}">${esc(e.r)}${Q&&Q.v===6?`<span class="rel">${rel(Q,e)}</span>`:''}</div>${e.R.lo!==e.R.hi?`<div class="span">${f6(e.R.lo)} - ${f6(e.R.hi)}</div>`:''}</div>
-        <div class="desc"><div class="name">${esc(e.name)}</div>${e.note?`<div class="note">${esc(e.note)}</div>`:''}${e.v?'<div class="var">varies: picks a random block inside this range</div>':''}</div>
+        <div class="desc"><div class="name">${esc(e.name)}</div>${e.note?`<div class="note">${ipx(e.note)}</div>`:''}${e.v?'<div class="var">varies: picks a random block inside this range</div>':''}</div>
         <div class="badge b-${U6[e.u][1]}">${U6[e.u][0]}</div>
       </div>`).join('')}</div>`;
     l6.appendChild(sec)}
