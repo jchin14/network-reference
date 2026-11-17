@@ -367,7 +367,11 @@ E('hotspot','192.168.2.0/24','med','macOS Internet Sharing','Mac is 192.168.2.1 
 E('hotspot','192.168.8.0/24','med','Huawei pocket Wi-Fi / 4G routers, GL.iNet travel routers','Gateway 192.168.8.1.');
 
 // ---- Routers
-E('router','192.168.1.0/24','high','Linksys, Netgear, newer TP-Link Archer, older ASUS, OpenWrt, pfSense, OPNsense, UniFi, Verizon Fios, Starlink router','Gateway 192.168.1.1 (AT&T gateways use 192.168.1.254). Probably the most common LAN in the world.');
+E('router','192.168.1.0/24','high','Linksys, Netgear, newer TP-Link Archer, older ASUS, OpenWrt, pfSense, OPNsense, UniFi, Verizon Fios','Gateway 192.168.1.1 (AT&T gateways use 192.168.1.254). Probably the most common LAN in the world.');
+E('router','192.168.1.0/24','high','Starlink router','Default LAN, gateway 192.168.1.1. The app only lets you pick 192.168.1-4.x (/24) or 10.0-10.3.x (/16).');
+E('router','192.168.2.0/23','low','Starlink router (LAN option)','192.168.2.x and 192.168.3.x, both /24s.');
+E('router','192.168.4.0/24','low','Starlink router (LAN option)','Last /24 option.');
+E('router','10.0.0.0/14','low','Starlink router (LAN option)','10.0.x to 10.3.x, each a /16.');
 E('router','192.168.0.0/24','high','TP-Link, D-Link, Tenda, some Netgear','Gateway 192.168.0.1.');
 E('router','192.168.68.0/22','high','TP-Link Deco mesh','192.168.68.1, spanning 192.168.68.0 - 192.168.71.255.');
 E('router','10.0.0.0/24','high','Comcast Xfinity and other ISP gateways','Gateway 10.0.0.1. It’s also the first thing everyone types for WireGuard and lab networks.');
